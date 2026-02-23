@@ -16,8 +16,12 @@ app.config['SECRET_KEY'] = os.urandom(24).hex()
 #def home():
 #    return(render_template("index.html"))
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
+@app.route("/")
+def home():
+    return(render_template("index.html"))
+
+@app.route("/imgoatex", defaults={"path": ""})
+@app.route("/imgoatex/<path:path>")
 def redirect_to_imgoatex(path):
     return redirect(f"https://imgoatex.arnaudlelievre.fr/{path}", code=302)
 

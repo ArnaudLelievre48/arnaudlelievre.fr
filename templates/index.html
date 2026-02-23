@@ -7,14 +7,46 @@
 	</head>
 
 	<body>
+		<canvas id="wave-bg"></canvas>
+		<div id="bg-cover"></div>
 
 		<header>
-			<font face="Arial">
+			<div id="projectBtn" class="left-bar">
+				<p>Projects</p>
+			</div>
+			<div id="whoAmItBtn" class="middle-bar"><p>Who am I ?</p></div>
+			<div id="contactMeBtn" class="right-bar"><p>Contact me</p></div>
 		</header>
+		
+		<section class="page" id="0">
+			<h1 class="arnaudlelievrefr">ArnaudLelievre.fr</h1>
+			<div class="downpage">
+				<div class="links">
+					<a><img src="{{ url_for('static', filename='github.png') }}"></img></a>
+					<a><img src="{{ url_for('static', filename='youtube.png') }}"></img></a>
+				</div>
+			</div>
+		</section>
+		<section class="page projectPage" id="1">
+			<div class="project-wrap">
+				<div class="project-description">
+					<img class="project-logo" src="{{ url_for('static', filename='ImGoaTeX-white.png') }}"></img>
+					<h2 class="project-title">ImGoaTeX - Improved Graphics and Objectively more Accessible than TeX</h2>
+					<p class="project-paragraph">ImGoaTeX is a programming language that I created that aims to replace LaTeX's Beamer to make presentation while allowing for GIFs, videos, slides-animations and much more. To do that it compiles into a portable .html file.</p>
+					<button onclick="window.location.href='https://imgoatex.arnaudlelievre.fr';" class="project-access">Try it out !</button>
+				</div>
+				<img class="project-demo" src="{{ url_for('static', filename='imgoatex-demo.gif') }}"></img>
+			</div>
+		</section>
+		<section class="page" id="2">
+			<h1 class="arnaudlelievrefr">Who am I ?</h1>
+		</section>
+		<section class="page" id="3">
+			<h1 class="arnaudlelievrefr">Contact me</h1>
+		</section>
 
-		<div class="page">
-		</div>
-
+		<script src="{{ url_for('static', filename='script-bg.js') }}"></script>
+		<script src="{{ url_for('static', filename='script.js') }}"></script>
 	</body>
 
 </html>
