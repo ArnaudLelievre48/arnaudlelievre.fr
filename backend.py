@@ -25,5 +25,12 @@ def home():
 def redirect_to_imgoatex(path):
     return redirect(f"https://imgoatex.arnaudlelievre.fr/{path}", code=302)
 
+# to delet after
+@app.route("/e-shoes")
+def eshoes():
+    return(render_template("e-shoes.html"))
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
