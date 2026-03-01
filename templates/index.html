@@ -1,49 +1,62 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>HELLO !</title>
+		<title>arnaudlelievre.fr</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
 	</head>
 
 	<body>
-		<canvas id="wave-bg"></canvas>
-		<div id="bg-cover"></div>
+		<div class="page-wraper">
+			<div class="header">
 
-		<header>
-			<div id="projectBtn" class="left-bar">
-				<p>Projects</p>
-			</div>
-			<div id="whoAmItBtn" class="middle-bar"><p>Who am I ?</p></div>
-			<div id="contactMeBtn" class="right-bar"><p>Contact me</p></div>
-		</header>
-		
-		<section class="page" id="0">
-			<h1 class="arnaudlelievrefr">ArnaudLelievre.fr</h1>
-			<div class="downpage">
-				<div class="links">
-					<a><img src="{{ url_for('static', filename='github.png') }}"></img></a>
-					<a><img src="{{ url_for('static', filename='youtube.png') }}"></img></a>
+				<div class="left-header">
+
+					<div class="header-button-wraper home active">
+						<button class="header-button home active" id="homeBtn">Home</button>
+					</div>
+					<div class="round-right home active">
+						<div class="inner-round-right home active">
+						</div>
+					</div>
+
 				</div>
-			</div>
-		</section>
-		<section class="page projectPage" id="1">
-			<div class="project-wrap">
-				<div class="project-description">
-					<img class="project-logo" src="{{ url_for('static', filename='ImGoaTeX-white.png') }}"></img>
-					<h2 class="project-title">ImGoaTeX - Improved Graphics and Objectively more Accessible than TeX</h2>
-					<p class="project-paragraph">ImGoaTeX is a programming language that I created that aims to replace LaTeX's Beamer to make presentation while allowing for GIFs, videos, slides-animations and much more. To do that it compiles into a portable .html file.</p>
-					<button onclick="window.location.href='https://imgoatex.arnaudlelievre.fr';" class="project-access">Try it out !</button>
+
+				<div class="right-header">
+
+					<div class="round-left projects">
+						<div class="inner-round-left projects">
+						</div>
+					</div>
+					<div class="header-button-wraper projects">
+						<button class="header-button projects" id="projectsBtn">Projects</button>
+					</div>
+					<div class="round-right projects">
+						<div class="inner-round-right projects">
+						</div>
+					</div>
+
+					<div class="round-left resume">
+						<div class="inner-round-left resume">
+						</div>
+					</div>
+					<div class="header-button-wraper resume">
+						<button class="header-button resume" id="resumeBtn">Resume</button>
+					</div>
+
 				</div>
-				<img class="project-demo" src="{{ url_for('static', filename='imgoatex-demo.gif') }}"></img>
+
 			</div>
-		</section>
-		<section class="page" id="2">
-			<h1 class="arnaudlelievrefr">Who am I ?</h1>
-		</section>
-		<section class="page" id="3">
-			<h1 class="arnaudlelievrefr">Contact me</h1>
-		</section>
+
+			<div class="content home-content">
+				<p>arnaudlelievre.fr</p>
+			</div>
+		</div>
+
 
 		<script src="{{ url_for('static', filename='script-bg.js') }}"></script>
 		<script src="{{ url_for('static', filename='script.js') }}"></script>
