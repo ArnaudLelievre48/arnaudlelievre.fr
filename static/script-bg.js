@@ -19,9 +19,9 @@ let Ny = canvas.height;
 const power1 = 6;
 const power2 = 7;
 
-let r0 = 1.2 * Nx * (Nx + Ny)/(2*N);
+let r0 = 0.8 * Nx * (Nx + Ny)/(2*N);
 
-const A = 500000000;
+const A = 100000000;
 let B = A*(r0**(power2-power1));
 
 const v0 = 3;
@@ -124,10 +124,10 @@ function step(){
     let dym = part.y - mouse.y;
     let rm = Math.sqrt(dxm*dxm + dym*dym);
 
-    if(rm < 300){ // radius of influence
+    if(rm < 150){ // radius of influence
       let mouseSpeed = Math.sqrt(mouse.vx**2 + mouse.vy**2);
-      let f = 10 * mouseSpeed*mouseSpeed / (rm + 10); // scale for effect
-      if(f > 1000) f = 1000; // max force cap
+      let f = 2 * mouseSpeed*mouseSpeed / (rm + 10); // scale for effect
+      if(f > 500) f = 500; // max force cap
 
       ax += f * dxm / rm;
       ay += f * dym / rm;
