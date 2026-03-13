@@ -13,6 +13,7 @@
 	<body>
 		<div class="page-wraper">
 			<div class="header">
+				<div class="tab-blob"></div>
 
 				<div class="left-header">
 
@@ -28,15 +29,15 @@
 
 				<div class="right-header">
 
-					<div class="round-left projects">
-						<div class="inner-round-left projects">
+					<div class="round-left projects ">
+						<div class="inner-round-left projects ">
 						</div>
 					</div>
-					<div class="header-button-wraper projects">
-						<button class="header-button projects" id="projectsBtn">Projects</button>
+					<div class="header-button-wraper projects ">
+						<button class="header-button projects " id="projectsBtn">Projects</button>
 					</div>
-					<div class="round-right projects">
-						<div class="inner-round-right projects">
+					<div class="round-right projects ">
+						<div class="inner-round-right projects ">
 						</div>
 					</div>
 
@@ -52,9 +53,65 @@
 
 			</div>
 
-			<div class="content home-content">
-				<p>arnaudlelievre.fr</p>
+			<div class="content home-content home active">
+				<div class="left-hero">
+					<div class="left-top-hero">
+						<p class="arnaudlelievre">Arnaud Lelievre</p>
+						<p class="activity">Engineering student at ENSTA</p>
+					</div>
+					<div class="spearator-top-bottom">
+					</div>
+					<div class="left-bottom-hero">
+						<div class="link-tab">
+							<div class="link-tab-top">
+								<div class="link-item link-item-left link-github" onclick="window.open('https://github.com/ArnaudLelievre48', '_blank')">
+									<div class="img-wrapper">
+										<img class="link-logo" src="{{ url_for('static', filename='github.svg') }}"></img>
+									</div>
+								</div>
+								<div class="link-item link-item-right link-youtube" onclick="window.open('https://www.youtube.com/@arnaudlelievre48/featured', '_blank')">
+									<div class="img-wrapper">
+										<img class="link-logo" src="{{ url_for('static', filename='youtube.svg') }}"></img>
+									</div>
+								</div>
+							</div>
+							<div class="link-tab-bottom">
+								<div class="link-item link-item-left link-linkedin" onclick="window.open('https://www.linkedin.com/in/arnaud-lelievre-160359289/', '_blank')">
+									<div class="img-wrapper">
+										<img class="link-logo" src="{{ url_for('static', filename='linkedin.svg') }}"></img>
+									</div>
+								</div>
+								<div class="link-item link-item-right link-email" onclick="window.location.href='mailto:arnaudlelievre.fr@gmail.com'">
+									<div class="img-wrapper">
+										<img class="link-logo" src="{{ url_for('static', filename='email.svg') }}"></img>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="right-hero">
+					<canvas id="fluidCanvas">
+					</canvas>
+					<div class="right-hero-content">
+						<p class="right-hero-text-title">Hi !</p>
+						<p class="right-hero-text">My name is Arnaud Lelievre, this is my own website</p>
+						<p class="right-hero-text">that I am hosting myself</p>
+						<p class="right-hero-text">I am a 21 yo engineering student at ENSTA, Brest.</p>
+						<p class="right-hero-text">My interests are fluid mechanics, programming, Linux, basketball, running,</p>
+						<p class="right-hero-text">lifting and cooking</p>
+					</div>
+				</div>
+
 			</div>
+
+			<div class="content project-content projects">
+						<p class="arnaudlelievre">Projects</p>
+			</div>
+			<div class="content resume-content resume">
+						<p class="arnaudlelievre">Resume</p>
+			</div>
+
 		</div>
 
 

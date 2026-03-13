@@ -1,12 +1,14 @@
 :root {
   --bg: #141412;
-  --ac: #2b2031;
+  --ac: #919174;
   --fg: #d3d9bf;
   --color1: #2b2031;
   --color2: #f0e3f7;
   --fontcolor-fg: #d9d3c5;
   --fontcolor-ac: #574d39;
+  --font-normal: min(2vw, 2vh);
   --font-big: min(4vw, 4vh);
+  --font-huge: min(8vw, 8vh);
 }
 
 
@@ -36,8 +38,8 @@ body {
 }
 
 .page-wraper {
-  width: 94vw;
-  height: 92vh;
+  width: 96vw;
+  height: 94vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,6 +53,23 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+.tab-blob {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--bg);
+  border-radius: min(4vw,4vh) min(4vw,4vh) 0 0;
+
+  left: 0;
+  width: 0;
+
+  z-index: 0;
+
+  transition:
+    left 0.45s cubic-bezier(.22,1,.36,1),
+    width 0.45s cubic-bezier(.22,1,.36,1);
 }
 .left-header {
   width: 50%;
@@ -78,6 +97,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
+  transition: all 0.1s ease;
 }
 .header-button {
   width: 80%;
@@ -88,10 +110,12 @@ body {
   font-family: "Nunito", sans-serif;
   font-weight: bold;
   color: var(--fontcolor-ac);
+  transition: all 0.1s ease;
 }
 .active {
   color: var(--fontcolor-fg);
   background-color: var(--bg);
+  transition: all 0.1s ease;
 }
 
 .round-right {
@@ -113,6 +137,7 @@ body {
   width: min(2vw, 2vh);
   height: 100%;
   background-color: var(--fg);
+  transition: all 0.1s ease;
 }
 .round-left.active {
   background-color: var(--bg);
@@ -122,6 +147,7 @@ body {
   height: 100%;
   background-color: var(--fg);
   border-radius: 0 0 min(2vw, 2vh) 0;
+  transition: all 0.1s ease;
 }
 
 
@@ -138,10 +164,200 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  display: none;
+}
+.content.active {
+  display: flex;
 }
 .content.home-content {
   border-radius: 0 min(4vw, 4vh) min(4vw, 4vh) min(4vw, 4vh);
 }
+.left-hero {
+  width: 40%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 5%;
+}
+.left-top-hero {
+  width: 90%;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.arnaudlelievre {
+  font-family: "Nunito", sans-serif;
+  color: var(--fontcolor-fg);
+  font-size:  var(--font-huge);
+  margin: 0;
+}
+.activity {
+  font-family: "Nunito", sans-serif;
+  color: var(--fontcolor-ac);
+  font-size:  var(--font-normal);
+  margin: 0;
+}
+.spearator-top-bottom {
+  width: 50%;
+  height: 0.2vw;
+  background-color: var(--ac);
+}
+.left-bottom-hero {
+  width: 90%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.link-tab {
+  width: 80%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.link-tab-top {
+  width: 100%;
+  height: 47%;
+  margin-bottom: 3%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.link-tab-top:hover {
+  height: 60%;
+}
+.link-tab-bottom {
+  width: 100%;
+  height: 47%;
+  margin-top: 3%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.link-tab-bottom:hover {
+  height: 60%;
+}
+.link-item {
+  height: 100%;
+  width: 47%;
+  border-radius: 1vw;
+  border: 0.2vw solid var(--ac);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.link-item:hover {
+  width: 60%;
+  transition: all 0.3s ease;
+  background-color: #00000000;
+}
+.link-item-left {
+  margin-right: 3%;
+}
+.link-item-right {
+  margin-left: 3%;
+}
+.link-logo {
+  width: 30%;
+  height: 30%;
+  color: var(--bg);
+  transition: all 0.5s ease;
+}
+.img-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: var(--fg);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8vw;
+  transition: all 0.3s ease;
+}
+.img-wrapper:hover {
+  background-color: #00000000;
+}
+.img-wrapper:hover .link-logo {
+  transform: scale(1.5);
+  filter: brightness(2) contrast(1.2) drop-shadow(0 0 0.8vw var(--ac)) hue-rotate(45deg);
+}
+.link-github {
+  background-image: url("github.png");
+  background-size: cover;
+}
+.link-youtube {
+  background-image: url("youtube.png");
+  background-size: cover;
+}
+.link-linkedin {
+  background-image: url("linkedin.png");
+  background-size: cover;
+}
+.link-email {
+  background-image: url("email.png");
+  background-size: cover;
+}
+#fluidCanvas {
+  position: absolute;
+  width: 100%;
+  height: 90%;
+  display: block;
+  background-color: #00000000;
+  z-index: 0;
+  top: 5%;
+  left: 0;
+}
+
+
+
+
+
+
+.right-hero {
+  width: 50%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.right-hero-content {
+  position: relative; /* in front of canvas */
+  z-index: 99;        /* higher than canvas */
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  top: 50%;          /* vertical center */
+  transform: translateY(-50%);
+  font-family: "Nunito", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.right-hero-text-title {
+  color: var(--fg);
+  font-size: calc(1.5 * var(--font-big));
+}
+.right-hero-text {
+  color: var(--ac);
+  font-size: var(--font-normal);
+}
+
+
 .content.project-content {
   border-radius: min(4vw, 4vh) min(4vw, 4vh) min(4vw, 4vh) min(4vw, 4vh);
 }
