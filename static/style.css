@@ -99,7 +99,7 @@ body {
   justify-content: center;
   position: relative;
   z-index: 1;
-  transition: all 0.1s ease;
+  transition: all 0.1s ease-in-out;
 }
 .header-button {
   width: 80%;
@@ -110,12 +110,12 @@ body {
   font-family: "Nunito", sans-serif;
   font-weight: bold;
   color: var(--fontcolor-ac);
-  transition: all 0.1s ease;
+  transition: all 0.1s ease-in-out;
 }
 .active {
   color: var(--fontcolor-fg);
   background-color: var(--bg);
-  transition: all 0.1s ease;
+  transition: all 0.1s ease-in-out;
 }
 
 .round-right {
@@ -257,6 +257,7 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 .link-item:hover {
   width: 60%;
@@ -318,6 +319,10 @@ body {
   z-index: 0;
   top: 5%;
   left: 0;
+  filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 0.8vw var(--fg)) hue-rotate(45deg);
+}
+.vspan {
+  height: 2vh;
 }
 
 
@@ -349,12 +354,17 @@ body {
   justify-content: center;
 }
 .right-hero-text-title {
+  margin-top: -5vh;
   color: var(--fg);
   font-size: calc(1.5 * var(--font-big));
+  filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 0.8vw var(--fg)) hue-rotate(45deg);
 }
 .right-hero-text {
   color: var(--ac);
   font-size: var(--font-normal);
+  padding: 0;
+  margin: 0.1vw;
+  filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 0.8vw var(--ac)) hue-rotate(45deg);
 }
 
 
