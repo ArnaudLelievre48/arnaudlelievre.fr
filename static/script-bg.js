@@ -21,7 +21,7 @@ const power2 = 7;
 
 let r0 = 1.2 * Nx * (Nx + Ny)/(2*N);
 
-const A = 2000000000;
+const A = 500000000;
 let B = A*(r0**(power2-power1));
 
 const v0 = 3;
