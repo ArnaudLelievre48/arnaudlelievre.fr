@@ -202,6 +202,7 @@ body {
   color: var(--fontcolor-fg);
   font-size:  var(--font-huge);
   margin: 0;
+  text-align: center;
 }
 .activity {
   font-family: "Nunito", sans-serif;
@@ -209,7 +210,7 @@ body {
   font-size:  var(--font-normal);
   margin: 0;
 }
-.spearator-top-bottom {
+.separator-top-bottom {
   width: 50%;
   height: 0.2vw;
   background-color: var(--ac);
@@ -426,4 +427,74 @@ body {
 }
 .content.resume-content {
   border-radius: min(4vw, 4vh) 0 min(4vw, 4vh) min(4vw, 4vh);
+}
+
+
+
+
+
+@media (orientation: portrait) {
+  :root {
+    --font-normal: min(2.5vw, 1vh);
+    --font-big: min(5vw, 2vh);
+    --font-huge: min(10vw, 4vh);
+  }
+
+  .page-wraper {
+    height: 96vh;
+  }
+  .header {
+    height: 6%;
+  }
+
+  .content {
+    flex-direction: column;
+    height: 94%;
+  }
+  .left-hero {
+    width: 100%;
+    height: 35%;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+  }
+
+  .left-top-hero {
+    width: 50%;
+    height: 80%;
+  }
+  .left-bottom-hero {
+    width: 50%;
+    height: 80%;
+  }
+  .separator-top-bottom {
+    width: 0.5vw;
+    height: 50%;
+  }
+  .right-hero {
+    width: 90%;
+    height: 65%;
+  }
+  .demo-project {
+  width: 90%; 
+  height: auto;
+  border: 0.5vw solid var(--ac);
+  border-radius: 2vw;
+  }
+  .left-top-hero-row {
+    width: 40%;
+    height: 90%;
+  }
+  .logo-project {
+    width: 70%;
+  }
+  .header-button {
+    font-size: calc(0.75 * var(--font-big));
+  }
+  .right-hero-text-title {
+    font-size: calc(1.5 * var(--font-huge));
+  }
+  .right-hero-text {
+    font-size: calc(0.75 * var(--font-big));
+  }
 }
