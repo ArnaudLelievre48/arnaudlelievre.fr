@@ -15,6 +15,7 @@ const N = 50;
 
 let Nx = canvas.width;
 let Ny = canvas.height;
+console.log(Nx);
 
 const power1 = 6;
 const power2 = 7;
@@ -131,7 +132,6 @@ function step(){
 
       ax += f * dxm / rm;
       ay += f * dym / rm;
-      console.log(f)
     }
 
 
@@ -179,7 +179,7 @@ function draw(){
   for(let p of particles){
 
     ctx.beginPath();
-    ctx.arc(p.x,p.y,5,0,Math.PI*2);
+    ctx.arc(p.x,p.y,5*Nx/1200,0,Math.PI*2);
     ctx.fill();
 
   }
