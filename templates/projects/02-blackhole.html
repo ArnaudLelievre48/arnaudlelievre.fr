@@ -1,0 +1,33 @@
+<div
+	class="project-theme"
+	data-theme-background="#03070d"
+	data-theme-surface="#eef4fa"
+	data-theme-text="#f5edda"
+	data-theme-accent="#76aee6"
+	data-theme-button-text="#102132"
+	data-theme-glow="#e8bd6d"
+	data-theme-pattern="rgba(118, 174, 230, 0.18)"
+	data-theme-star="#dcecff"
+	data-theme-effect="stars"
+	hidden
+></div>
+<div class="left-hero">
+	<div class="left-top-hero-row">
+		<img class="logo-project" src="{{ url_for('static', filename='blackhole_logo.png') }}" alt="BlackHole">
+	</div>
+	<div class="spearator-top-bottom"></div>
+	<div class="left-bottom-hero">
+		<p class="right-hero-text">I wrote multiple raytracing black hole simulations,</p>
+		<p class="right-hero-text">one of which runs in real-time at around 100fps. I also</p>
+		<p class="right-hero-text">wrote a version in Rust in order to get started with that language.</p>
+		<button class="project-goto" onclick="window.open('https://github.com/ArnaudLelievre48/ray-traced-black-hole', '_blank')">Check it out on GitHub</button>
+	</div>
+</div>
+<div class="right-hero">
+	<div class="right-hero-content">
+		<p class="right-hero-text-title">RayTracing BlackHole Simulation</p>
+		<video class="demo-project" autoplay muted loop playsinline preload="metadata" aria-label="Ray-traced black hole simulation" onclick="window.open('https://github.com/ArnaudLelievre48/ray-traced-black-hole', '_blank')">
+			<source src="{{ url_for('static', filename='blackhole_disk.mp4') }}" type="video/mp4">
+		</video>
+	</div>
+</div>

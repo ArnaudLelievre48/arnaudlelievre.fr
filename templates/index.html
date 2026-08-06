@@ -14,7 +14,14 @@
 	<body>
 		<div class="page-wraper">
 			<div class="header">
-				<div class="tab-blob"></div>
+				<div class="tab-blob" data-position="left" aria-hidden="true">
+					<div class="blob-round blob-round-left">
+						<div class="blob-inner-round blob-inner-round-left"></div>
+					</div>
+					<div class="blob-round blob-round-right">
+						<div class="blob-inner-round blob-inner-round-right"></div>
+					</div>
+				</div>
 
 				<div class="left-header">
 
@@ -109,25 +116,24 @@
 			</div>
 
 			<div class="content project-content projects">
-				<div class="left-hero">
-					<div class="left-top-hero-row">
-						<img class="logo-project" src="{{ url_for('static', filename='ImGoaTeX-white.png') }}"></img>
-					</div>
-					<div class="spearator-top-bottom"></div>
-					<div class="left-bottom-hero">
-						<p class="right-hero-text">ImGoaTeX is a programming language that I created, it</p>
-						<p class="right-hero-text">aims to replace LaTeX's Beamer library by allowing for videos,</p>
-						<p class="right-hero-text"> GIFs, slide animations and more, while simplifying some syntaxes</p>
-						<button class="project-goto" onclick="window.open('https://imgoatex.arnaudlelievre.fr/', '_blank')">Try ImGoaTeX out !</button>
-					</div>
+				<div class="project-backdrop" data-effect="none" aria-hidden="true">
+					<div class="project-star-field"></div>
 				</div>
-				<div class="right-hero">
-					<div class="right-hero-content">
-						<p class="right-hero-text-title">ImGoaTeX - online editor</p>
-						<img class="demo-project" src="{{ url_for('static', filename='imgoatex-demo.gif') }}" onclick="window.open('https://imgoatex.arnaudlelievre.fr/', '_blank')"></img>
-					</div>
+				<div class="project-pages">
+					{% for project_template in project_templates %}
+						<article class="project-page{% if loop.first %} is-current{% endif %}" aria-hidden="{{ 'false' if loop.first else 'true' }}">
+							{% include project_template %}
+						</article>
+					{% endfor %}
 				</div>
 
+				<button class="project-nav project-nav-previous" type="button" aria-label="Previous project" title="Previous project">&larr;</button>
+				<div class="project-counter" aria-live="polite">
+					<span class="project-counter-current">1</span>
+					<span aria-hidden="true">/</span>
+					<span class="project-counter-total">1</span>
+				</div>
+				<button class="project-nav project-nav-next" type="button" aria-label="Next project" title="Next project">&rarr;</button>
 			</div>
 			<div class="content resume-content resume">
 						<p class="arnaudlelievre">Resume</p>
