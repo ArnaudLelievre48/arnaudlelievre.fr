@@ -1,0 +1,226 @@
+{
+  "version": 2,
+  "projection": "equirectangular",
+  "initialPosition": "center",
+  "initialYaw": 90,
+  "initialPitch": -7,
+  "step": 5.0,
+  "positions": [
+    {
+      "id": "x-1_y-1_z-1",
+      "label": "Grid -1 \u00b7 -1 \u00b7 -1",
+      "x": -5.0,
+      "y": -75.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x-1_y-1_z-1.webp"
+    },
+    {
+      "id": "x+0_y-1_z-1",
+      "label": "Grid +0 \u00b7 -1 \u00b7 -1",
+      "x": 0.0,
+      "y": -75.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+0_y-1_z-1.webp"
+    },
+    {
+      "id": "x+1_y-1_z-1",
+      "label": "Grid +1 \u00b7 -1 \u00b7 -1",
+      "x": 5.0,
+      "y": -75.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+1_y-1_z-1.webp"
+    },
+    {
+      "id": "x-1_y+0_z-1",
+      "label": "Grid -1 \u00b7 +0 \u00b7 -1",
+      "x": -5.0,
+      "y": -70.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+0_z-1.webp"
+    },
+    {
+      "id": "x+0_y+0_z-1",
+      "label": "Grid +0 \u00b7 +0 \u00b7 -1",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+0_y+0_z-1.webp"
+    },
+    {
+      "id": "x+1_y+0_z-1",
+      "label": "Grid +1 \u00b7 +0 \u00b7 -1",
+      "x": 5.0,
+      "y": -70.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+0_z-1.webp"
+    },
+    {
+      "id": "x-1_y+1_z-1",
+      "label": "Grid -1 \u00b7 +1 \u00b7 -1",
+      "x": -5.0,
+      "y": -65.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+1_z-1.webp"
+    },
+    {
+      "id": "x+0_y+1_z-1",
+      "label": "Grid +0 \u00b7 +1 \u00b7 -1",
+      "x": 0.0,
+      "y": -65.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+0_y+1_z-1.webp"
+    },
+    {
+      "id": "x+1_y+1_z-1",
+      "label": "Grid +1 \u00b7 +1 \u00b7 -1",
+      "x": 5.0,
+      "y": -65.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+1_z-1.webp"
+    },
+    {
+      "id": "x-1_y-1_z+0",
+      "label": "Grid -1 \u00b7 -1 \u00b7 +0",
+      "x": -5.0,
+      "y": -75.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x-1_y-1_z+0.webp"
+    },
+    {
+      "id": "x+0_y-1_z+0",
+      "label": "Grid +0 \u00b7 -1 \u00b7 +0",
+      "x": 0.0,
+      "y": -75.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x+0_y-1_z+0.webp"
+    },
+    {
+      "id": "x+1_y-1_z+0",
+      "label": "Grid +1 \u00b7 -1 \u00b7 +0",
+      "x": 5.0,
+      "y": -75.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x+1_y-1_z+0.webp"
+    },
+    {
+      "id": "x-1_y+0_z+0",
+      "label": "Grid -1 \u00b7 +0 \u00b7 +0",
+      "x": -5.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+0_z+0.webp"
+    },
+    {
+      "id": "center",
+      "label": "Starting point",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/center.webp"
+    },
+    {
+      "id": "x+1_y+0_z+0",
+      "label": "Grid +1 \u00b7 +0 \u00b7 +0",
+      "x": 5.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+0_z+0.webp"
+    },
+    {
+      "id": "x-1_y+1_z+0",
+      "label": "Grid -1 \u00b7 +1 \u00b7 +0",
+      "x": -5.0,
+      "y": -65.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+1_z+0.webp"
+    },
+    {
+      "id": "x+0_y+1_z+0",
+      "label": "Grid +0 \u00b7 +1 \u00b7 +0",
+      "x": 0.0,
+      "y": -65.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x+0_y+1_z+0.webp"
+    },
+    {
+      "id": "x+1_y+1_z+0",
+      "label": "Grid +1 \u00b7 +1 \u00b7 +0",
+      "x": 5.0,
+      "y": -65.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+1_z+0.webp"
+    },
+    {
+      "id": "x-1_y-1_z+1",
+      "label": "Grid -1 \u00b7 -1 \u00b7 +1",
+      "x": -5.0,
+      "y": -75.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x-1_y-1_z+1.webp"
+    },
+    {
+      "id": "x+0_y-1_z+1",
+      "label": "Grid +0 \u00b7 -1 \u00b7 +1",
+      "x": 0.0,
+      "y": -75.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+0_y-1_z+1.webp"
+    },
+    {
+      "id": "x+1_y-1_z+1",
+      "label": "Grid +1 \u00b7 -1 \u00b7 +1",
+      "x": 5.0,
+      "y": -75.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+1_y-1_z+1.webp"
+    },
+    {
+      "id": "x-1_y+0_z+1",
+      "label": "Grid -1 \u00b7 +0 \u00b7 +1",
+      "x": -5.0,
+      "y": -70.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+0_z+1.webp"
+    },
+    {
+      "id": "x+0_y+0_z+1",
+      "label": "Grid +0 \u00b7 +0 \u00b7 +1",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+0_y+0_z+1.webp"
+    },
+    {
+      "id": "x+1_y+0_z+1",
+      "label": "Grid +1 \u00b7 +0 \u00b7 +1",
+      "x": 5.0,
+      "y": -70.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+0_z+1.webp"
+    },
+    {
+      "id": "x-1_y+1_z+1",
+      "label": "Grid -1 \u00b7 +1 \u00b7 +1",
+      "x": -5.0,
+      "y": -65.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x-1_y+1_z+1.webp"
+    },
+    {
+      "id": "x+0_y+1_z+1",
+      "label": "Grid +0 \u00b7 +1 \u00b7 +1",
+      "x": 0.0,
+      "y": -65.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+0_y+1_z+1.webp"
+    },
+    {
+      "id": "x+1_y+1_z+1",
+      "label": "Grid +1 \u00b7 +1 \u00b7 +1",
+      "x": 5.0,
+      "y": -65.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v3/x+1_y+1_z+1.webp"
+    }
+  ]
+}

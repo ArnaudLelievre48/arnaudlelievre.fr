@@ -20,13 +20,14 @@
 		<p class="right-hero-text">I wrote multiple raytracing black hole simulations,</p>
 		<p class="right-hero-text">one of which runs in real-time at around 100fps. I also</p>
 		<p class="right-hero-text">wrote a version in Rust in order to get started with that language.</p>
-		<button class="project-goto" onclick="window.open('https://github.com/ArnaudLelievre48/ray-traced-black-hole', '_blank')">Check it out on GitHub</button>
+		<button class="project-goto" onclick="window.location.href='{{ url_for('blackhole_tour') }}'">Try the 360 tour</button>
+		<button class="project-goto project-goto-secondary" onclick="window.open('https://github.com/ArnaudLelievre48/ray-traced-black-hole', '_blank')">Code on GitHub</button>
 	</div>
 </div>
 <div class="right-hero">
 	<div class="right-hero-content">
 		<p class="right-hero-text-title">RayTracing BlackHole Simulation</p>
-		<video class="demo-project" autoplay muted loop playsinline preload="metadata" aria-label="Ray-traced black hole simulation" onclick="window.open('https://github.com/ArnaudLelievre48/ray-traced-black-hole', '_blank')">
+		<video class="demo-project" autoplay muted loop playsinline preload="metadata" aria-label="Ray-traced black hole simulation" onclick="window.location.href='{{ url_for('blackhole_tour') }}'">
 			<source src="{{ url_for('static', filename='blackhole_disk.mp4') }}" type="video/mp4">
 		</video>
 	</div>

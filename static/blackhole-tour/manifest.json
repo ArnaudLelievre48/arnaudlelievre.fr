@@ -1,0 +1,130 @@
+{
+  "headingCount": 16,
+  "positions": [
+    {
+      "id": "center",
+      "label": "Point central",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "frames": [
+        "/static/blackhole-tour/center/heading_00.webp",
+        "/static/blackhole-tour/center/heading_01.webp",
+        "/static/blackhole-tour/center/heading_02.webp",
+        "/static/blackhole-tour/center/heading_03.webp",
+        "/static/blackhole-tour/center/heading_04.webp",
+        "/static/blackhole-tour/center/heading_05.webp",
+        "/static/blackhole-tour/center/heading_06.webp",
+        "/static/blackhole-tour/center/heading_07.webp",
+        "/static/blackhole-tour/center/heading_08.webp",
+        "/static/blackhole-tour/center/heading_09.webp",
+        "/static/blackhole-tour/center/heading_10.webp",
+        "/static/blackhole-tour/center/heading_11.webp",
+        "/static/blackhole-tour/center/heading_12.webp",
+        "/static/blackhole-tour/center/heading_13.webp",
+        "/static/blackhole-tour/center/heading_14.webp",
+        "/static/blackhole-tour/center/heading_15.webp"
+      ]
+    },
+    {
+      "id": "front",
+      "label": "Un pas avant",
+      "x": 0,
+      "y": 1,
+      "z": 0,
+      "frames": [
+        "/static/blackhole-tour/front/heading_00.webp",
+        "/static/blackhole-tour/front/heading_01.webp",
+        "/static/blackhole-tour/front/heading_02.webp",
+        "/static/blackhole-tour/front/heading_03.webp",
+        "/static/blackhole-tour/front/heading_04.webp",
+        "/static/blackhole-tour/front/heading_05.webp",
+        "/static/blackhole-tour/front/heading_06.webp",
+        "/static/blackhole-tour/front/heading_07.webp",
+        "/static/blackhole-tour/front/heading_08.webp",
+        "/static/blackhole-tour/front/heading_09.webp",
+        "/static/blackhole-tour/front/heading_10.webp",
+        "/static/blackhole-tour/front/heading_11.webp",
+        "/static/blackhole-tour/front/heading_12.webp",
+        "/static/blackhole-tour/front/heading_13.webp",
+        "/static/blackhole-tour/front/heading_14.webp",
+        "/static/blackhole-tour/front/heading_15.webp"
+      ]
+    },
+    {
+      "id": "back",
+      "label": "Un pas arri\u00e8re",
+      "x": 0,
+      "y": -1,
+      "z": 0,
+      "frames": [
+        "/static/blackhole-tour/back/heading_00.webp",
+        "/static/blackhole-tour/back/heading_01.webp",
+        "/static/blackhole-tour/back/heading_02.webp",
+        "/static/blackhole-tour/back/heading_03.webp",
+        "/static/blackhole-tour/back/heading_04.webp",
+        "/static/blackhole-tour/back/heading_05.webp",
+        "/static/blackhole-tour/back/heading_06.webp",
+        "/static/blackhole-tour/back/heading_07.webp",
+        "/static/blackhole-tour/back/heading_08.webp",
+        "/static/blackhole-tour/back/heading_09.webp",
+        "/static/blackhole-tour/back/heading_10.webp",
+        "/static/blackhole-tour/back/heading_11.webp",
+        "/static/blackhole-tour/back/heading_12.webp",
+        "/static/blackhole-tour/back/heading_13.webp",
+        "/static/blackhole-tour/back/heading_14.webp",
+        "/static/blackhole-tour/back/heading_15.webp"
+      ]
+    },
+    {
+      "id": "left",
+      "label": "Un pas gauche",
+      "x": -1,
+      "y": 0,
+      "z": 0,
+      "frames": [
+        "/static/blackhole-tour/left/heading_00.webp",
+        "/static/blackhole-tour/left/heading_01.webp",
+        "/static/blackhole-tour/left/heading_02.webp",
+        "/static/blackhole-tour/left/heading_03.webp",
+        "/static/blackhole-tour/left/heading_04.webp",
+        "/static/blackhole-tour/left/heading_05.webp",
+        "/static/blackhole-tour/left/heading_06.webp",
+        "/static/blackhole-tour/left/heading_07.webp",
+        "/static/blackhole-tour/left/heading_08.webp",
+        "/static/blackhole-tour/left/heading_09.webp",
+        "/static/blackhole-tour/left/heading_10.webp",
+        "/static/blackhole-tour/left/heading_11.webp",
+        "/static/blackhole-tour/left/heading_12.webp",
+        "/static/blackhole-tour/left/heading_13.webp",
+        "/static/blackhole-tour/left/heading_14.webp",
+        "/static/blackhole-tour/left/heading_15.webp"
+      ]
+    },
+    {
+      "id": "right",
+      "label": "Un pas droite",
+      "x": 1,
+      "y": 0,
+      "z": 0,
+      "frames": [
+        "/static/blackhole-tour/right/heading_00.webp",
+        "/static/blackhole-tour/right/heading_01.webp",
+        "/static/blackhole-tour/right/heading_02.webp",
+        "/static/blackhole-tour/right/heading_03.webp",
+        "/static/blackhole-tour/right/heading_04.webp",
+        "/static/blackhole-tour/right/heading_05.webp",
+        "/static/blackhole-tour/right/heading_06.webp",
+        "/static/blackhole-tour/right/heading_07.webp",
+        "/static/blackhole-tour/right/heading_08.webp",
+        "/static/blackhole-tour/right/heading_09.webp",
+        "/static/blackhole-tour/right/heading_10.webp",
+        "/static/blackhole-tour/right/heading_11.webp",
+        "/static/blackhole-tour/right/heading_12.webp",
+        "/static/blackhole-tour/right/heading_13.webp",
+        "/static/blackhole-tour/right/heading_14.webp",
+        "/static/blackhole-tour/right/heading_15.webp"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Black hole 360 · arnaudlelievre.fr</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="theme-color" content="#010308">
+	<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='blackhole-tour.css') }}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+	<main class="tour is-loading" data-manifest="{{ url_for('static', filename='blackhole-tour-v3/manifest.json') }}">
+		<canvas class="tour-canvas" aria-label="Interactive 360-degree view of a ray-traced black hole"></canvas>
+		<div class="scene-shade" aria-hidden="true"></div>
+		<div class="crosshair" aria-hidden="true"><span></span><span></span></div>
+
+		<a class="home-link glass" href="{{ url_for('home') }}" aria-label="Back to arnaudlelievre.fr">
+			<span class="home-arrow" aria-hidden="true">←</span>
+			<img src="{{ url_for('static', filename='blackhole_logo.png') }}" alt="">
+			<span>Portfolio</span>
+		</a>
+
+		<div class="status glass" aria-live="polite">
+			<span class="live-dot" aria-hidden="true"></span>
+			<span class="status-position">Loading panorama</span>
+			<span class="status-angle">090° / −07°</span>
+		</div>
+
+		<section class="intro-card glass" aria-label="About this simulation">
+			<p class="eyebrow">GPU ray tracing · precomputed space</p>
+			<h1>Black hole <span>360</span></h1>
+			<p>Look freely around each spherical render, then move through a 3×3×3 grid of nearby viewpoints.</p>
+		</section>
+
+		<section class="controls glass" aria-label="Navigation controls">
+			<div class="controls-heading">
+				<div>
+					<span class="eyebrow">Navigation</span>
+					<strong>Move through frames</strong>
+				</div>
+				<span class="mouse-hint">Mouse to look</span>
+			</div>
+			<div class="movement-keys">
+				<button class="key key-z" data-action="forward"><kbd>Z</kbd><span>forward</span></button>
+				<button class="key key-q" data-action="left"><kbd>Q</kbd><span>left</span></button>
+				<button class="key key-s" data-action="back"><kbd>S</kbd><span>back</span></button>
+				<button class="key key-d" data-action="right"><kbd>D</kbd><span>right</span></button>
+				<button class="key key-up" data-action="up"><kbd>Space</kbd><span>up</span></button>
+				<button class="key key-down" data-action="down"><kbd>Shift</kbd><span>down</span></button>
+			</div>
+			<p class="boundary-message" aria-live="polite"></p>
+		</section>
+
+		<div class="start-screen">
+			<div class="start-orbit" aria-hidden="true"><span></span></div>
+			<p class="eyebrow">Interactive experiment</p>
+			<h2>Enter the simulation</h2>
+			<p>Click to lock the cursor. Move the mouse to turn the camera, just like in a game.</p>
+			<button class="enter-button" type="button"><span>Explore in 360°</span><i aria-hidden="true">→</i></button>
+			<small>Esc releases the cursor · touch and drag on mobile</small>
+		</div>
+
+		<div class="loader" role="status">
+			<span class="loader-ring" aria-hidden="true"></span>
+			<strong>Loading spacetime</strong>
+			<small class="loader-progress">Preparing panoramas</small>
+		</div>
+
+		<div class="webgl-error glass" hidden>
+			<strong>WebGL 2 is unavailable.</strong>
+			<span>This 360° preview needs hardware-accelerated graphics.</span>
+		</div>
+	</main>
+	<script src="{{ url_for('static', filename='blackhole-tour.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "version": 2,
+  "projection": "equirectangular",
+  "initialPosition": "center",
+  "initialYaw": 90,
+  "initialPitch": -7,
+  "step": 5.0,
+  "positions": [
+    {
+      "id": "center",
+      "label": "Starting point",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v2/center.webp"
+    },
+    {
+      "id": "front",
+      "label": "Forward position",
+      "x": 0.0,
+      "y": -65.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v2/front.webp"
+    },
+    {
+      "id": "back",
+      "label": "Rear position",
+      "x": 0.0,
+      "y": -75.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v2/back.webp"
+    },
+    {
+      "id": "left",
+      "label": "Left position",
+      "x": -5.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v2/left.webp"
+    },
+    {
+      "id": "right",
+      "label": "Right position",
+      "x": 5.0,
+      "y": -70.0,
+      "z": 8.0,
+      "image": "/static/blackhole-tour-v2/right.webp"
+    },
+    {
+      "id": "up",
+      "label": "Upper position",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 13.0,
+      "image": "/static/blackhole-tour-v2/up.webp"
+    },
+    {
+      "id": "down",
+      "label": "Lower position",
+      "x": 0.0,
+      "y": -70.0,
+      "z": 3.0,
+      "image": "/static/blackhole-tour-v2/down.webp"
+    }
+  ]
+}

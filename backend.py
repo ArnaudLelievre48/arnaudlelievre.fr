@@ -18,6 +18,10 @@ def home():
         project_templates=project_templates,
     )
 
+@app.route("/blackhole-tour")
+def blackhole_tour():
+    return render_template("blackhole-tour.html")
+
 @app.route("/imgoatex", defaults={"path": ""})
 @app.route("/imgoatex/<path:path>")
 def redirect_to_imgoatex(path):
