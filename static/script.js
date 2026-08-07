@@ -1,6 +1,12 @@
 const blob = document.querySelector(".tab-blob");
 const header = document.querySelector(".header");
 let blobMovement = 0;
+const contentCornerProperties = [
+    "borderTopLeftRadius",
+    "borderTopRightRadius",
+    "borderBottomRightRadius",
+    "borderBottomLeftRadius"
+];
 
 function moveBlob(section, animate = true) {
     const wrapper = document.querySelector(
@@ -21,8 +27,14 @@ function moveBlob(section, animate = true) {
     ).matches;
     const movement = ++blobMovement;
 
-    if (!shouldAnimate) blob.classList.remove("is-ready");
-    blob.dataset.position = shouldAnimate ? "middle" : targetPosition;
+    if (shouldAnimate) {
+        blob.classList.add("is-ready", "moving");
+    } else {
+        blob.classList.remove("is-ready", "moving");
+    }
+
+    // Start the edge morph at the same time as the blob movement.
+    blob.dataset.position = targetPosition;
 
     blob.style.setProperty(
         "--blob-x",
@@ -31,27 +43,41 @@ function moveBlob(section, animate = true) {
     blob.style.width = `${wrapperRect.width}px`;
 
     if (shouldAnimate) {
-        blob.classList.add("is-ready");
-
         const finishMovement = event => {
-            if (event.propertyName !== "transform") return;
+            // Ignore the shorter transform transitions bubbling from the edges.
+            if (event.target !== blob || event.propertyName !== "transform") return;
             blob.removeEventListener("transitionend", finishMovement);
 
             if (movement === blobMovement) {
-                blob.dataset.position = targetPosition;
+                blob.classList.remove("moving");
             }
         };
 
         blob.addEventListener("transitionend", finishMovement);
     } else {
         blob.getBoundingClientRect();
-        requestAnimationFrame(() => blob.classList.add("is-ready"));
+        requestAnimationFrame(() => {
+            if (movement === blobMovement) {
+                blob.classList.add("is-ready");
+            }
+        });
     }
 }
 
 function setActive(section) {
     const activeButton = document.querySelector(".header-button.active");
     if (activeButton?.classList.contains(section)) return;
+
+    const currentContent = document.querySelector(".content.active");
+    const nextContent = document.querySelector(`.content.${section}`);
+
+    if (currentContent && nextContent) {
+        const currentStyle = getComputedStyle(currentContent);
+
+        contentCornerProperties.forEach(property => {
+            nextContent.style[property] = currentStyle[property];
+        });
+    }
 
     // remove active everywhere
     document.querySelectorAll(".active").forEach(el => {
@@ -62,6 +88,15 @@ function setActive(section) {
     document.querySelectorAll("." + section).forEach(el => {
         el.classList.add("active");
     });
+
+    if (nextContent) {
+        nextContent.getBoundingClientRect();
+        requestAnimationFrame(() => {
+            contentCornerProperties.forEach(property => {
+                nextContent.style[property] = "";
+            });
+        });
+    }
 
     moveBlob(section);
     syncProjectBlobTheme();

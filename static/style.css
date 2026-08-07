@@ -65,15 +65,20 @@ body {
   left: 0;
   width: 0;
 
-  z-index: 0;
   transform: translate3d(var(--blob-x, 0px), 0, 0);
   will-change: transform, width;
+  pointer-events: none;
+  z-index: -10;
 }
 .tab-blob.is-ready {
+  z-index: 1;
   transition:
-    transform 0.65s cubic-bezier(.16, 1, .3, 1),
+    transform 1s cubic-bezier(.16, 1, .3, 1),
     width 0.65s cubic-bezier(.16, 1, .3, 1),
     background-color 0.65s ease;
+}
+.tab-blob.moving {
+  z-index: 999;
 }
 .blob-round {
   position: absolute;
@@ -84,7 +89,7 @@ body {
   transform: scaleX(1);
   transition:
     transform 0.24s cubic-bezier(.22, 1, .36, 1),
-    background-color 0.65s ease;
+    background-color 0.4s ease-in;
 }
 .blob-round-left {
   right: 100%;
@@ -153,7 +158,8 @@ body {
 .active {
   color: var(--fontcolor-fg);
   background-color: var(--bg);
-  transition: all 0.1s ease-in-out;
+  opacity: 100%;
+  transition: all 0.3s ease-in-out,
   border-bottom: 1px solid var(--bg);
 }
 .header-button-wraper.active,
@@ -165,9 +171,11 @@ body {
 .header-button-wraper.active {
   transition: background-color 0.52s cubic-bezier(.16, 1, .3, 1);
 }
-.header-button,
+.header-button {
+  transition: color 0.05s ease-in;
+}
 .header-button.active {
-  transition: color 0.32s ease;
+  transition: color 0.5s 0.7s ease-in;
 }
 
 .round-right {
@@ -244,6 +252,7 @@ body {
   align-items: center;
   justify-content: center;
   display: none;
+  transition: border-radius 1s cubic-bezier(.16, 1, .3, 1);
 }
 .content.active {
   display: flex;
@@ -519,8 +528,11 @@ body {
   position: relative;
   overflow: hidden;
   background-color: var(--project-bg);
-  transition: background-color 0.7s ease;
+  transition:
+    background-color 0.7s ease,
+    border-radius 1s cubic-bezier(.16, 1, .3, 1);
 }
+
 .project-backdrop {
   position: absolute;
   inset: 0;
@@ -706,7 +718,7 @@ body {
 }
 @keyframes project-grid-drift {
   to {
-    transform: translate3d(2%, 1%, 0);
+    transform: translate3d(20%, 15%, 0);
   }
 }
 @keyframes project-grid-scan {
@@ -819,6 +831,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .content,
   .project-content,
   .project-page,
   .project-backdrop::before,
