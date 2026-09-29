@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Démos d'animation</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #f5f5f5; }
+    header { display: flex; gap: 1rem; align-items: center; padding: 1rem; background: white; border-bottom: 1px solid #ddd; }
+    h1 { margin: 0; font-size: 1.1rem; }
+    select { font: inherit; padding: .35rem; }
+    iframe { display: block; width: 100%; height: calc(100vh - 67px); border: 0; background: white; }
+    .empty { padding: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Démos d'animation</h1>
+    {% if demos %}
+      <form method="get">
+        <label>
+          <span class="visually-hidden">Animation</span>
+          <select name="animation" onchange="this.form.submit()">
+            {% for name in demos %}
+              <option value="{{ name }}" {% if name == selected_demo %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </form>
+    {% endif %}
+  </header>
+
+  {% if selected_entry %}
+    <iframe
+      title="{{ selected_demo }}"
+      src="{{ url_for('demo_temp_file', animation_name=selected_demo, filename=selected_entry.name) }}"
+    ></iframe>
+  {% else %}
+    <p class="empty">Aucune animation n'est disponible.</p>
+  {% endif %}
+</body>
+</html>

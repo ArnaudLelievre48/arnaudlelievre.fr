@@ -746,7 +746,58 @@ body {
   animation-play-state: paused;
 }
 .content.resume-content {
+  overflow-y: scroll;
   border-radius: min(4vw, 4vh) 0 min(4vw, 4vh) min(4vw, 4vh);
+}
+.resume-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+}
+.resume-title {
+  font-family: "Nunito", sans-serif;
+  color: var(--fontcolor-fg);
+  font-size:  var(--font-big);
+  margin-bottom: 0.25em;
+  width: 100%;
+  text-align: center;
+}
+.resume-item-title {
+  font-family: "Nunito", sans-serif;
+  color: var(--ac);
+  font-size:  var(--font-big);
+  margin: 0.35em;
+  margin-left: 1em;
+  text-align: left;
+}
+.resume-item {
+  font-family: "Nunito", sans-serif;
+  color: var(--fg);
+  font-size:  var(--font-normal);
+  margin-bottom: 0.25em;
+  text-align: left;
+}
+.resume-content-wrapper-double-column {
+  display: flex;
+  flex-direction: row;
+  width: 95%;
+  margin-left: 2.5%;
+  margin-right: 2.5%;
+}
+.resume-left {
+  height: 50%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+.resume-right {
+  height: 50%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
 }
 
 
