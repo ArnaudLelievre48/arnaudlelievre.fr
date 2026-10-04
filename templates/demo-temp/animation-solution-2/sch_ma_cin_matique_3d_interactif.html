@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Docking Lab — Plateforme et bouée</title>
+  <title>Docking Lab — Solution 2, support amorti</title>
   <link rel="stylesheet" href="docking.css">
   <script defer src="vendor/three.min.js"></script>
   <script defer src="vendor/OrbitControls.js"></script>
@@ -12,14 +12,14 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="brand"><div class="brand-icon" aria-hidden="true">◎</div><div><p class="eyebrow">Étude de mécanisme / 02</p><h1>Docking Lab <span class="muted">/ plateforme & bouée</span></h1></div></div>
-    <div class="header-meta"><span>Reconstruction du croquis · unités arbitraires</span><button data-open-model>Comprendre le système ↗</button></div>
+    <div class="brand"><div class="brand-icon" aria-hidden="true">◎</div><div><p class="eyebrow">Étude de mécanisme / 02</p><h1>Docking Lab <span class="muted">/ solution 2 · support amorti</span></h1></div></div>
+    <div class="header-meta"><span>Croquis solution 2 · cotes indicatives en mètres</span><button data-open-model>Comprendre le système ↗</button></div>
   </header>
   <main class="workspace">
     <section id="canvas-container" class="viewport" aria-label="Simulation 3D interactive du docking">
       <div id="labels-layer"></div>
       <div class="view-top">
-        <div class="scene-title"><h2>Capturer, aligner, accoupler</h2><p>Tripode spatial & pince périphérique<br>Bras à 4 pivots + rotation terminale A5</p></div>
+        <div class="scene-title"><h2>Capturer, aligner, accoupler</h2><p>Porte-pince encastré · D1 sur longeron<br>Bras à 4 pivots + rotation terminale A5</p></div>
         <nav class="view-tools" aria-label="Options de visualisation">
           <button data-view="perspective" aria-pressed="true">Perspective</button>
           <button data-view="front" aria-pressed="false">Face XZ</button>
@@ -29,14 +29,14 @@
           <button id="btn-water" aria-pressed="true">Eau</button>
         </nav>
       </div>
-      <div class="scene-legend"><span><i class="dot"></i>Tripode & pince</span><span><i class="dot rose"></i>Bouée indépendante</span><span><i class="dot amber"></i>Bras A1–A5</span></div>
+      <div class="scene-legend"><span><i class="dot"></i>Support amorti</span><span><i class="dot rose"></i>Bouée indépendante</span><span><i class="dot amber"></i>Bras A1–A5</span></div>
       <div class="viewport-footer">
         <p class="camera-hint">Glisser : orbite · molette : zoom · clic droit : déplacement · espace : lecture / pause</p>
         <div class="telemetry">
           <div class="telemetry-head"><span>BOX_1 ↔ BOX_2</span><span id="dock-badge" class="status">Interface ouverte</span></div>
           <div class="metrics">
-            <div class="metric"><span>Écart radial Δr</span><strong id="val-delta-r">—</strong> <em>u</em><small>tolérance illustrative ≤ 0,015 u</small></div>
-            <div class="metric"><span>Écart axial signé ΔZ</span><strong id="val-delta-z">—</strong> <em>u</em><small>contact ± 0,005 u</small></div>
+            <div class="metric"><span>Écart radial Δr</span><strong id="val-delta-r">—</strong> <em>m</em><small>tolérance illustrative ≤ 0,015 m</small></div>
+            <div class="metric"><span>Écart axial signé</span><strong id="val-delta-z">—</strong> <em>m</em><small>contact ± 0,005 m</small></div>
             <div class="metric"><span>Opposition des normales</span><strong id="val-angle">—</strong> <em>°</em><small>écart angulaire ≤ 1°</small></div>
             <div class="metric"><span>Orientation azimutale</span><strong id="val-key-angle">—</strong> <em>°</em><small>écart de BOX_1 / BOX_2 ≤ 1°</small></div>
           </div>
@@ -52,20 +52,26 @@
         <p id="phase-note" class="phase-note"></p>
         <div class="phase-list" id="phase-list" aria-label="Étapes du cycle"></div>
         <label class="muted" for="timeline" style="font-size:10px">Explorer les 9 étapes</label>
-        <input type="range" id="timeline" min="0" max="26" step="0.01" value="0">
-        <div class="timeline-label"><span id="time-value" class="mono">0,0 s</span><span>26,0 s</span></div>
+        <input type="range" id="timeline" min="0" max="30" step="0.01" value="0">
+        <div class="timeline-label"><span id="time-value" class="mono">0,0 s</span><span>30,0 s</span></div>
         <div class="run-actions"><button id="btn-auto-play" class="primary">▶ Lancer le cycle</button><button id="btn-reset" title="Revenir à la position initiale">↺ Réinitialiser</button></div>
         <div class="speed-row"><span class="muted">Vitesse de lecture</span><div class="speed-buttons"><button data-speed="0.5" aria-pressed="false">×0,5</button><button data-speed="1" aria-pressed="true">×1</button><button data-speed="2" aria-pressed="false">×2</button></div></div>
         <p class="alert" id="safety-message" role="status" aria-live="polite"></p>
       </section>
       <section class="panel-section">
         <div class="section-heading"><h3>Deux interfaces temporaires</h3></div>
-        <div class="interface-state"><span>Pince ↔ collerette</span><output id="capture-state">OPEN</output></div>
+        <div class="interface-state"><span>Pince ↔ zone de capture</span><output id="capture-state">OPEN</output></div>
         <div class="interface-state"><span>BOX_1 ↔ BOX_2</span><output id="dock-state">OPEN</output></div>
         <p class="technical" id="constraint-note"></p>
         <div class="control"><div class="control-label"><label for="slide-opening">Ouverture angulaire</label><output id="txt-opening" for="slide-opening"></output></div><input id="slide-opening" type="range" min="0" max="1" step="0.01" value="1"><div class="limits"><span>fermée · 0°</span><span>ouverte · 65° par demi-pince</span></div></div>
         <div class="action-grid"><button id="btn-position">Placer la bouée</button><button id="btn-capture">Engager la pince</button><button id="btn-align">Aligner le bras</button><button id="btn-dock">Verrouiller les boîtes</button><button id="btn-retreat">Reculer le bras</button><button id="btn-release">Libérer la bouée</button></div>
         <p class="technical">« Placer » définit une pose d’exploration. Le contact géométrique seul n’engage aucun verrouillage.</p>
+      </section>
+      <section class="panel-section">
+        <div class="section-heading"><h3>Pince amortie · G4</h3><small>D1 ↔ D2</small></div>
+        <div id="support-controls"></div>
+        <div class="pose-grid"><div><span>Longueur D1–D2</span><output id="damper-length">—</output></div><div><span>Écart au repos</span><output id="damper-extension">—</output></div><div><span>Inclinaison pince</span><output id="gripper-tilt">—</output></div></div>
+        <p class="technical">Le porte-pince est encastré dans le longeron. G4 incline la pince et son levier D2. D1 est fixé au longeron ; l’amortisseur travaille entre D1 et D2. Après capture, la bouée suit la pince.</p>
       </section>
       <section class="panel-section">
         <div class="section-heading"><h3>Bras · 5 rotations</h3><small>A1 → A5</small></div>
@@ -75,12 +81,12 @@
       <section class="panel-section">
         <div class="section-heading"><h3>Bouée · pose indépendante</h3><small>BOX_2 solidaire</small></div>
         <div id="buoy-controls"></div>
-        <p class="technical">Après capture : translations retenues, rotation autour de Z autorisée. Après docking : pose relative verrouillée.</p>
+        <p class="technical">Après capture : la bouée suit la pince mobile autour de G4 ; sa rotation locale reste libre. Après docking : les commandes de pose sont verrouillées.</p>
       </section>
       <section class="panel-section">
-        <p class="notice"><b>Reconstruction.</b> Deux demi-pinces pivotent en sens opposés autour d’un axe Z commun pour envelopper la bouée. Trois bielles rigides à rotules et un mât central structurel fixe restent les hypothèses du support.</p>
+        <p class="notice"><b>Reconstruction.</b> Deux demi-pinces pivotent en sens opposés autour d’un axe Z commun pour envelopper la bouée. Le porte-pince est encastré dans le longeron. G4 incline la pince ; l’amortisseur relie D1 sur le longeron à D2 sur la pince.</p>
         <button class="model-link" data-open-model>Voir les schémas fonctionnel et cinématique ↗</button>
-        <p class="technical">Les dimensions du croquis sont inconnues : u = unité arbitraire. Animation géométrique, sans calcul d’efforts ni de flottabilité.</p>
+        <p class="technical">Cotes manuscrites indicatives : plateforme ≈ 5 m, écart vertical ≈ 3–4 m, capture Ø ≈ 4 m. Les autres dimensions sont illustratives. Animation sans calcul d’efforts ni de flottabilité.</p>
       </section>
     </aside>
   </main>
@@ -89,44 +95,48 @@
     <div class="dialog-content">
       <h3>01 / Schéma fonctionnel</h3>
       <div class="functional-flow">
-        <div><b>APPROCHER</b>Bouée libre<small>La plateforme et la bouée sont deux assemblages indépendants.</small></div>
-        <div><b>CAPTURER</b>Saisir la collerette<small>Deux demi-pinces se referment par rotation, comme deux bras autour de la bouée.</small></div>
-        <div><b>POSITIONNER</b>Approcher BOX_1<small>A1–A4 commandent la position et l’inclinaison dans XZ.</small></div>
-        <div><b>ORIENTER</b>Ajuster l’azimut<small>A5 tourne autour de l’axe du segment terminal.</small></div>
-        <div><b>ACCOUPLER</b>Verrouiller les boîtes<small>Faces opposées et alignées, puis liaison temporaire.</small></div>
+        <div><b>APPROCHER</b>Bouée libre<small>Deux assemblages indépendants, bras supérieur dégagé.</small></div>
+        <div><b>CAPTURER</b>Envelopper la bouée<small>Deux demi-pinces articulées retiennent la zone large.</small></div>
+        <div><b>AMORTIR</b>Accompagner le mouvement<small>G4 incline la pince ; D1 reste sur le longeron, D2 suit la pince.</small></div>
+        <div><b>ALIGNER</b>Positionner BOX_1<small>A1–A4 corrigent la position et l’inclinaison ; A5 ajuste l’azimut.</small></div>
+        <div><b>ACCOUPLER</b>Verrouiller les boîtes<small>Faces opposées, contact puis liaison temporaire.</small></div>
       </div>
-      <p>Les neuf étapes suivent la séquence du document. La cinématique inverse choisit une posture A1, résout A2–A3, puis calcule A4 pour garder l’outil vertical. A5 ajuste l’orientation azimutale. BOX_1 suit exclusivement cette chaîne ; BOX_2 suit toujours la bouée.</p>
+      <p>Le bras porte-pince est encastré dans le longeron. Sa fixation est rigide et n’ajoute aucun pivot G1. La pince peut s’incliner au pivot inférieur G4 : son levier porte D2, tandis que D1 est fixé directement au longeron. L’amortisseur relie ces deux rotules. Après capture, la bouée suit la pince autour de G4.</p>
       <h3>02 / Graphe des liaisons</h3>
-      <div class="diagram-scroll"><svg class="kinematic-svg" viewBox="0 0 860 400" role="img" aria-label="La plateforme porte séparément un bras à quatre pivots Y et un pivot terminal A5, et trois branches de tripode à rotules reliées à une pince. La bouée porte BOX_2. Deux interfaces temporaires relient pince et collerette, puis BOX_1 et BOX_2.">
-        <rect x="20" y="110" width="120" height="60"/><text x="36" y="135">PLATFORM</text><text class="sub" x="36" y="153">bâti commun</text>
-        <path d="M140 126 H168 V42 H195 M140 150 H168 V270 H195"/>
-        <rect x="195" y="20" width="430" height="44"/><text x="211" y="47">A1 ○Y → A2 ○Y → A3 ○Y → A4 ○Y → A5 ↻local</text>
-        <path d="M625 42 H678"/><rect x="678" y="20" width="150" height="44"/><text x="721" y="47">BOX_1</text>
-        <path d="M753 64 V148" style="stroke:#f4bc69;stroke-dasharray:5 5"/><text class="sub" x="592" y="101">OPEN / LOCKED</text><text class="sub" x="582" y="116">encastrement démontable supposé</text>
-        <rect x="678" y="148" width="150" height="44"/><text x="721" y="175">BOX_2</text><path d="M753 192 V220"/>
-        <rect x="660" y="220" width="168" height="85"/><text x="687" y="249">BUOY_ASSEMBLY</text><text class="sub" x="684" y="270">corps + col + collerette</text><text class="sub" x="684" y="285">+ BOX_2 : ensemble rigide</text>
-        <path d="M195 270 H211 V190 H235 M211 270 H235 M211 270 V345 H235 M435 208 H454 V270 H478 M435 270 H478 M435 345 H454 V270"/>
-        <rect x="235" y="190" width="200" height="36"/><text x="250" y="213">T_UP_1 ○ — bielle — ○ T_LOW_1</text>
-        <rect x="235" y="252" width="200" height="36"/><text x="250" y="275">T_UP_2 ○ — bielle — ○ T_LOW_2</text>
-        <rect x="235" y="327" width="200" height="36" style="stroke-dasharray:4 4"/><text x="250" y="350">T_UP_3 ○ — bielle — ○ T_LOW_3</text>
-        <text class="sub" x="252" y="310">3e branche spatiale, occultée dans le croquis</text>
-        <rect x="478" y="245" width="125" height="55"/><text x="498" y="267">Mât + pince</text><text class="sub" x="490" y="286">pivot Z · 2 demi-pinces</text>
-        <path d="M603 270 H660" style="stroke:#6be4d3;stroke-dasharray:5 5"/><text class="sub" x="491" y="333">OPEN / ENGAGED · capture démontable</text>
-        <text class="sub" x="24" y="200">Longeron et supports :</text><text class="sub" x="24" y="215">encastrés à PLATFORM</text>
-        <text class="sub" x="24" y="377">Mât central distinct et fixe (hypothèse T3-B) · aucun guidage vertical commandé ajouté.</text>
+      <div class="diagram-scroll"><svg class="kinematic-svg" viewBox="0 0 860 420" role="img" aria-label="La plateforme porte le bras A1 à A5 et le longeron. Le longeron porte D1 et un bras porte-pince encastré. G4 relie ce bras à la pince, qui porte D2. L’amortisseur relie D1 à D2. La pince capture la bouée ; BOX_1 et BOX_2 s’accouplent séparément.">
+        <rect x="20" y="140" width="115" height="65"/><text x="33" y="165">PLATFORM</text><text class="sub" x="33" y="185">bâti + longeron</text>
+        <path d="M135 158 H170 V43 H200 M135 185 H170 V290 H200"/>
+        <rect x="200" y="20" width="415" height="46"/><text x="216" y="48">A1 ○Y → A2 ○Y → A3 ○Y → A4 ○Y → A5 ↻local</text>
+        <path d="M615 43 H680"/><rect x="680" y="20" width="155" height="46"/><text x="722" y="48">BOX_1</text>
+        <path d="M758 66 V146" style="stroke:#f4bc69;stroke-dasharray:5 5"/><text class="sub" x="583" y="108">OPEN / LOCKED</text>
+        <rect x="680" y="146" width="155" height="46"/><text x="722" y="175">BOX_2</text><path d="M758 192 V226"/>
+        <rect x="680" y="226" width="155" height="68"/><text x="716" y="251">BOUÉE</text><text class="sub" x="690" y="276">ensemble rigide indépendant</text>
+        <rect x="200" y="264" width="115" height="53"/><text x="214" y="286">Longeron</text><text class="sub" x="214" y="303">D1 fixe</text>
+        <path d="M315 290 H365"/><text class="sub" x="320" y="255">FIXED</text>
+        <rect x="365" y="264" width="145" height="53"/><text x="380" y="286">Porte-pince</text><text class="sub" x="380" y="303">bras encastré</text>
+        <path d="M257 264 V205 H607 V264"/><text class="sub" x="270" y="198">D1 ○ — amortisseur — ○ D2</text>
+        <path d="M510 290 H565"/><text x="515" y="279">○ G4</text>
+        <rect x="565" y="264" width="83" height="53"/><text x="585" y="286">Pince</text><text class="sub" x="578" y="303">levier D2</text>
+        <path d="M648 290 H663 V260 H680" style="stroke:#6be4d3;stroke-dasharray:5 5"/>
+        <text class="sub" x="568" y="346">OPEN / ENGAGED</text>
+        <text class="sub" x="202" y="367">Porte-pince : encastrement · G4 : pivot Y · D1 et D2 : rotules</text>
+        <text class="sub" x="202" y="390">Pièce verticale locale sur la pince conservée séparément ; fonction inconnue.</text>
       </svg></div>
-      <h3 style="margin-top:24px">03 / Ce qui est observé, interprété ou supposé</h3>
-      <table class="model-table"><thead><tr><th>Ensemble</th><th>Reconstruction</th><th>Certitude / choix</th></tr></thead><tbody>
-        <tr><td>Plateforme</td><td>Plaque, longeron cylindrique d’axe Y, entretoises triangulées</td><td>Pièces solidaires. Cylindre vu en bout : interprétation 3D privilégiée.</td></tr>
-        <tr><td>Bras</td><td>4 pivots A1–A4 d’axe Y + A5 d’axe local</td><td>Liaisons visibles. Aucune tourelle ni poignet supplémentaire. Longueurs choisies : 1,9 / 3 / 2 / 0,45 u.</td></tr>
-        <tr><td>Tripode</td><td>3 bielles rigides ; 6 rotules ; azimuts espacés de 120°</td><td>Troisième branche conservée. Rotules et répartition régulière : hypothèses. Aucun allongement des bielles.</td></tr>
-        <tr><td>Élément central</td><td>Mât structurel fixe distinct de la troisième branche</td><td>Variante T3-B retenue. La fonction réelle et une éventuelle glissière restent inconnues.</td></tr>
-        <tr><td>Pince</td><td>2 demi-pinces articulées sur un pivot commun d’axe Z, sous la collerette</td><td>Fermeture angulaire précisée par la conception : les deux bras se referment en sens opposés. Ouverture de 65° par demi-pince choisie pour la démonstration.</td></tr>
-        <tr><td>Capture</td><td>Translations retenues, rotation Z libre ; inclinaison nulle dans la maquette</td><td>Choix de contrainte pour la démonstration. Les mobilités résiduelles réelles sont inconnues.</td></tr>
-        <tr><td>Boîtes</td><td>Contact puis encastrement temporaire commutable</td><td>Rigidité du verrouillage supposée. Nature mécanique, magnétique ou électrique inconnue.</td></tr>
+      <h3 style="margin-top:24px">03 / Observations et hypothèses</h3>
+      <table class="model-table"><thead><tr><th>Ensemble</th><th>Reconstruction</th><th>Statut / choix</th></tr></thead><tbody>
+        <tr><td>Plateforme et longeron</td><td>Plateforme de 5 m ; grand cylindre d’axe Y ; supports inclinés rigides</td><td>La cote 5 m est manuscrite ; son périmètre exact reste à confirmer. Largeur et diamètre du longeron illustratifs.</td></tr>
+        <tr><td>Bras</td><td>A1–A4 parallèles d’axe Y, A5 d’axe longitudinal local</td><td>Longueurs choisies : 1,9 / 3,4 / 3,6 / 0,45 m. La chaîne entière impose l’orientation de BOX_1.</td></tr>
+        <tr><td>Fixations au longeron</td><td>Bras porte-pince encastré ; D1 fixé au longeron</td><td>Précision de conception fournie par l’utilisateur ; remplace l’ancien pivot G1 supposé.</td></tr>
+        <tr><td>Pince mobile</td><td>Bras fixe → G4 → pince et levier D2</td><td>G4 conservé comme pivot Y. D2 placé sur la pince mobile pour permettre le travail de l’amortisseur ; géométrie du levier illustrative.</td></tr>
+        <tr><td>Amortisseur</td><td>Corps + tige mobile, rotules D1 et D2</td><td>D1 côté longeron, D2 côté pince. Longueur calculée par les ancrages ; course illustrative. Aucun ressort supposé.</td></tr>
+        <tr><td>Pince</td><td>Capture périphérique Ø intérieur 4 m ; deux demi-pinces pivotantes</td><td>Diamètre manuscrit approximatif. Fermeture « câlin » conservée de ta précision précédente, car l’ouverture reste inconnue dans le document.</td></tr>
+        <tr><td>Élément vertical local</td><td>Pièce distincte avec tête et partie inférieure</td><td>Fonction inconnue : ni verrou ni actionneur attribué automatiquement.</td></tr>
+        <tr><td>Bouée capturée</td><td>Suit la pince en position et inclinaison, rotation locale libre</td><td>Contrainte de démonstration laissant G4 mobile ; mobilités réelles résiduelles inconnues.</td></tr>
+        <tr><td>Docking</td><td>Contact, puis liaison démontable supposée rigide</td><td>Verrouillage et nature électrique exacts inconnus.</td></tr>
       </tbody></table>
-      <p>Les cotes, limites angulaires, durée de 26 s et tolérances sont des choix de démonstration en unités arbitraires. L’eau est un repère visuel. Les mouvements libres de la bouée sont prescrits, sans dynamique des vagues. Les contrôles portent sur le bras et BOX_1 face à la plateforme et à la bouée, ainsi que sur l’alignement des contacts. Ils ne couvrent pas toutes les collisions, les efforts, la compliance ou la stabilité. Les schémas ne revendiquent pas de conformité normative.</p>
-      <p>Source : <a href="specification_liaisons_docking_3D.md">specification_liaisons_docking_3D.md</a>.</p>
+      <p>L’écart retenu entre plateforme et BOX_2 est de 3,5 m, dans la plage annotée 3–4 m, dont les références sont ambiguës. Les dimensions complémentaires, limites angulaires, tolérances et durée de 30 s sont illustratives. Les oscillations décroissantes sont prescrites pour montrer le rôle du support amorti ; aucun coefficient d’amortissement, ressort ou effort réel n’est identifié.</p>
+      <p>Les contrôles concernent le bras et BOX_1 face à la plateforme et à la bouée, la pince face au corps de bouée, l’alignement des contacts et les limites du support/amortisseur. Ils ne constituent pas une validation complète des collisions, de la stabilité, des efforts ou de la flottabilité.</p>
+      <p>Sources : <a href="specification_liaisons_docking_solution_2.md">spécification solution 2</a> · <a href="Schéma Solution 2.pdf">croquis PDF</a>.</p>
     </div>
   </dialog>
 </body>

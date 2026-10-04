@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Docking Lab — Simulation cinématique</title>
+  <title>Docking — Trois vérins et bras articulé</title>
   <link rel="stylesheet" href="docking.css">
   <script src="vendor/three.min.js"></script>
   <script src="vendor/OrbitControls.js"></script>
   <script src="docking-model.js"></script>
+  <script src="docking-scene.js" defer></script>
 </head>
 <body>
   <header class="app-header">
-    <div class="brand"><div class="brand-icon" aria-hidden="true">◎</div><div><p class="eyebrow">Étude de mécanisme / 01</p><h1>Docking Lab <span class="muted">/ plateforme suspendue</span></h1></div></div>
-    <div class="header-meta"><span>Modèle géométrique · dimensions en mm</span><button data-open-model>Comprendre le système ↗</button></div>
+    <div class="brand"><div class="brand-icon" aria-hidden="true">◎</div><div><p class="eyebrow">Solution retenue / docking</p><h1>Trois vérins <span class="muted">/ bras articulé</span></h1></div></div>
+    <div class="header-meta"><span>Maquette cinématique · échelle en mètres</span><button data-open-model>Comprendre le système ↗</button></div>
   </header>
   <main class="workspace">
-    <section id="canvas-container" class="viewport" aria-label="Simulation 3D interactive du docking">
+    <section id="canvas-container" class="viewport" aria-label="Animation 3D de la nouvelle solution mécanique">
       <div id="labels-layer"></div>
       <div class="view-top">
-        <div class="scene-title"><h2>Accostage par le passage central</h2><p>Suspension à 3 vérins · bras articulé 3R<br>Outil orienté par un poignet idéal ajouté</p></div>
+        <div class="scene-title"><h2>Capture, puis accouplement</h2><p>Cadre autour du col Ø 1 m<br>Bras : trois pivots A1–A3 + rotation axiale A4</p></div>
         <nav class="view-tools" aria-label="Options de visualisation">
           <button data-view="perspective" aria-pressed="true">Perspective</button>
           <button data-view="front" aria-pressed="false">Face</button>
@@ -27,932 +28,96 @@
           <button id="btn-labels" aria-pressed="true">Repères</button>
         </nav>
       </div>
-      <div class="scene-legend"><span><i class="dot"></i>Suspension</span><span><i class="dot rose"></i>Anneau mobile</span><span><i class="dot amber"></i>Bras 3R</span></div>
+      <div class="scene-legend"><span><i class="dot"></i>3 vérins</span><span><i class="dot rose"></i>Cadre de capture</span><span><i class="dot amber"></i>Bras 4 axes</span></div>
       <div class="viewport-footer">
         <p class="camera-hint">Glisser : orbite · molette : zoom · clic droit : déplacement · espace : lecture / pause</p>
         <div class="telemetry">
-          <div class="telemetry-head"><span>MESURES AU PLAN DE CONNEXION</span><span id="dock-badge" class="status">Prêt</span></div>
+          <div class="telemetry-head"><span id="capture-badge" class="status">Bouée libre</span><span id="dock-badge" class="status">Docking ouvert</span></div>
           <div class="metrics">
-            <div class="metric"><span>Écart radial Δr</span><strong id="val-delta-r">—</strong> <em>mm</em><small>tolérance ≤ 1,5 mm</small></div>
-            <div class="metric"><span>Écart axial signé ΔZ</span><strong id="val-delta-z">—</strong> <em>mm</em><small>accostage ± 0,5 mm</small></div>
-            <div class="metric"><span>Inclinaison outil</span><strong id="val-angle">—</strong> <em>°</em><small>tolérance ≤ 1°</small></div>
-            <div class="metric"><span>Insertion des broches</span><strong id="val-insertion">—</strong> <em>%</em><small id="key-angle">détrompage : —</small></div>
+            <div class="metric"><span>Écart transversal Δr</span><strong id="val-delta-r">—</strong> <em>mm</em><small>seuil démo ≤ 8 mm</small></div>
+            <div class="metric"><span>Écart vertical ΔZ</span><strong id="val-delta-z">—</strong> <em>mm</em><small>contact démo ± 2 mm</small></div>
+            <div class="metric"><span>Inclinaison BOX_1</span><strong id="val-angle">—</strong> <em>°</em><small id="key-angle">Azimut : —</small></div>
+            <div class="metric"><span>Approche finale</span><strong id="val-insertion">—</strong> <em>%</em><small>derniers 20 mm · démo</small></div>
           </div>
           <div class="insertion-track"><div id="dock-progress-bar"></div></div>
         </div>
       </div>
     </section>
-    <aside class="panel" aria-label="Commandes de simulation">
+    <aside class="panel" aria-label="Commandes de l’animation">
       <section class="panel-section">
-        <div class="section-heading"><h3>Cycle de docking</h3><small id="mode-label">TRAJECTOIRE CALCULÉE</small></div>
-        <p class="eyebrow" id="phase-counter">Étape 01 / 05</p>
-        <h2 id="phase-name" class="phase-title">Centrage</h2>
-        <p id="phase-note" class="phase-note">Placer le connecteur au-dessus de l’axe de réception.</p>
+        <div class="section-heading"><h3>Cycle de docking</h3><small id="mode-label">CYCLE AUTOMATIQUE</small></div>
+        <p class="eyebrow" id="phase-counter">Étape 01 / 11</p>
+        <h2 id="phase-name" class="phase-title">Approche</h2>
+        <p id="phase-note" class="phase-note">La bouée est indépendante ; le bras reste dégagé.</p>
         <div class="phase-list" id="phase-list" aria-label="Étapes du cycle"></div>
         <label class="muted" for="timeline" style="font-size:10px">Explorer le cycle</label>
-        <input type="range" id="timeline" min="0" max="18" step="0.01" value="0">
-        <div class="timeline-label"><span id="time-value" class="mono">0,0 s</span><span>18,0 s</span></div>
+        <input type="range" id="timeline" min="0" max="34" step="0.01" value="0">
+        <div class="timeline-label"><span id="time-value" class="mono">0,0 s</span><span>34,0 s</span></div>
         <div class="run-actions"><button id="btn-auto-play" class="primary">▶ Lancer le cycle</button><button id="btn-reset" title="Revenir à la position initiale">↺ Réinitialiser</button></div>
         <div class="speed-row"><span class="muted">Vitesse de lecture</span><div class="speed-buttons"><button data-speed="0.5" aria-pressed="false">×0,5</button><button data-speed="1" aria-pressed="true">×1</button><button data-speed="2" aria-pressed="false">×2</button></div></div>
         <p class="alert" id="safety-message" role="status" aria-live="polite"></p>
       </section>
       <section class="panel-section">
-        <div class="section-heading"><h3>Suspension · 3 SPS</h3><button class="small-button" id="btn-level">Remettre à niveau</button></div>
-        <p class="muted" style="font-size:11px;line-height:1.6">Courses réelles des vérins. Le mode manuel s’active dès qu’un réglage est modifié.</p>
+        <div class="section-heading"><h3>Suspension · 3 vérins</h3><button class="small-button" id="btn-level">Remettre à niveau</button></div>
+        <p class="muted" style="font-size:11px;line-height:1.6">Trois ancrages non alignés. Les courses règlent la hauteur et l’inclinaison sous l’hypothèse de guidage.</p>
         <div id="actuator-controls"></div>
-        <div class="pose-grid"><div><span>Altitude S4</span><output id="pose-height">—</output></div><div><span>Rotation X</span><output id="pose-pitch">—</output></div><div><span>Rotation Y</span><output id="pose-roll">—</output></div></div>
-        <p class="technical" id="closure-error">Erreur de fermeture : —</p>
+        <div class="pose-grid"><div><span>Hauteur du cadre</span><output id="pose-height">—</output></div><div><span>Rotation X</span><output id="pose-pitch">—</output></div><div><span>Rotation Y</span><output id="pose-roll">—</output></div></div>
+        <p class="technical" id="closure-error">Fermeture : —</p>
       </section>
       <section class="panel-section">
-        <div class="section-heading"><h3>Bras · 3 pivots</h3><small>S5 → S6 → S7</small></div>
+        <div class="section-heading"><h3>Bras · 4 articulations</h3><small>A1 → A4</small></div>
         <div id="joint-controls"></div>
-        <label class="switch-row"><input type="checkbox" id="compensated" checked><span>Maintenir l’orientation du connecteur<small>Poignet idéal à 3 rotations, ajouté au modèle. Désactiver pour explorer un outil solidaire du bras.</small></span></label>
+        <p class="technical">A1–A3 : pivots parallèles à Y. A4 : rotation autour du poignet. La colonne est fixée au cadre.</p>
+        <div class="control"><div class="control-label"><label for="slide-clamp">Capture latérale (hypothèse)</label><output id="txt-clamp" for="slide-clamp">0 %</output></div><input id="slide-clamp" type="range" min="0" max="100" step="0.1" value="0"></div>
+        <button id="btn-release" class="small-button" style="margin-top:12px">Libérer la capture</button>
       </section>
       <section class="panel-section">
-        <p class="notice"><b>Hypothèses visibles.</b> Un guidage idéal bloque les deux translations latérales et le lacet de S4. Le contact électrique est un état géométrique simulé.</p>
-        <button class="model-link" data-open-model>Voir les schémas fonctionnel et cinématique ↗</button>
-        <p class="technical">Échelle : 1 unité 3D = 100 mm. Repère mécanique : Z vertical. Contrôles de collision simplifiés ; pas de calcul d’efforts.</p>
+        <p class="notice"><b>Hypothèses de maquette.</b> Guidage idéal limitant le cadre à Z et deux inclinaisons ; extrémités des vérins à rotules ; mâchoires coulissantes. Les dimensions non cotées et les seuils sont illustratifs.</p>
+        <button class="model-link" data-open-model>Voir les liaisons et les hypothèses ↗</button>
+        <p class="technical">1 unité 3D = 1 m. Repère mécanique : Z vertical. Contrôles géométriques simplifiés ; pas de calcul d’efforts ni de dynamique de houle.</p>
       </section>
     </aside>
   </main>
   <dialog id="model-dialog" aria-labelledby="model-title">
-    <div class="dialog-header"><div><p class="eyebrow">Architecture & hypothèses</p><h2 id="model-title" style="margin-top:5px">Du mécanisme à la simulation</h2></div><button id="close-model" aria-label="Fermer les schémas">✕</button></div>
+    <div class="dialog-header"><div><p class="eyebrow">Architecture & hypothèses</p><h2 id="model-title" style="margin-top:5px">Deux interfaces temporaires</h2></div><button id="close-model" aria-label="Fermer les schémas">✕</button></div>
     <div class="dialog-content">
-      <h3>01 / Schéma fonctionnel</h3>
+      <h3>Du positionnement grossier au docking fin</h3>
       <div class="functional-flow">
-        <div><b>SUPPORTER</b>Suspendre et régler S4<small>3 courses de vérins → altitude et inclinaison de l’anneau.</small></div>
-        <div><b>POSITIONNER</b>Centrer l’outil<small>3 pivots du bras → position du poignet au-dessus du passage.</small></div>
-        <div><b>ORIENTER</b>Aligner les interfaces<small>Poignet idéal ajouté → axe vertical et détrompage fixe.</small></div>
-        <div><b>CONNECTER</b>Approcher et insérer<small>Trajectoire axiale → contact validé par les écarts géométriques.</small></div>
-        <div><b>LIBÉRER</b>Retirer l’outil<small>Remontée sur le même axe → dégagement de la prise.</small></div>
+        <div><b>POSITIONNER</b>Cadre suspendu<small>3 longueurs → hauteur, roulis et tangage sous hypothèse de guidage.</small></div>
+        <div><b>CAPTURER</b>Col de la bouée<small>Ouverture centrale, puis contacts latéraux. La bouée est indépendante avant capture.</small></div>
+        <div><b>ALIGNER</b>Bras A1–A4<small>Trois pivots coplanaires et une rotation axiale terminale. Embase fixée au cadre.</small></div>
+        <div><b>ACCOUPLER</b>BOX_1 / BOX_2<small>Contact puis verrouillage temporaire, distinct du maintien de la bouée.</small></div>
       </div>
-      <p>La commande fournit une position cible. La cinématique inverse calcule J1, J2 et J3 ; la cinématique directe recalcule la position atteinte. Les écarts et les enveloppes de collision autorisent ou arrêtent le mouvement.</p>
-      <h3>02 / Schéma des liaisons</h3>
-      <div class="diagram-scroll">
-      <svg class="kinematic-svg" viewBox="0 0 860 350" role="img" aria-label="Trois branches rotule glissière rotule relient le bâti à S4 ; un guidage idéal impose les contraintes latérales. S4 porte un bras à trois pivots, puis un poignet orientable et le connecteur S8. S9 est fixe au bâti.">
-        <rect x="20" y="98" width="85" height="53"/><text x="39" y="120">S0 · Bâti</text><text class="sub" x="39" y="137">référence fixe</text>
-        <path d="M105 123 H130 V38 H155 M130 123 H155 M130 123 V208 H155 M355 38 H380 V123 H405 M355 123 H405 M355 208 H380 V123"/>
-        <rect x="155" y="20" width="200" height="38"/><text x="171" y="44">A1 ○ — P(ℓ1) — ○ B1</text>
-        <rect x="155" y="105" width="200" height="38"/><text x="171" y="129">A2 ○ — P(ℓ2) — ○ B2</text>
-        <rect x="155" y="190" width="200" height="38"/><text x="171" y="214">A3 ○ — P(ℓ3) — ○ B3</text>
-        <text class="sub" x="162" y="79">Chaque vérin : corps + tige distincts</text>
-        <text class="sub" x="162" y="164">S = rotule · P = glissière commandée</text>
-        <rect x="405" y="98" width="107" height="53"/><text x="424" y="120">S4 · Anneau</text><text class="sub" x="424" y="137">Z, θX, θY</text>
-        <path d="M62 151 V255 H456 V151" style="stroke-dasharray:5 5"/>
-        <text class="sub" x="137" y="250">Guidage idéal ajouté : X = Y = ψZ = 0</text>
-        <path d="M512 124 H551 M650 124 H690"/>
-        <rect x="551" y="98" width="99" height="53"/><text x="568" y="120">Bras 3R</text><text class="sub" x="560" y="137">J1 → J2 → J3</text>
-        <rect x="690" y="98" width="147" height="53"/><text x="708" y="120">Poignet idéal</text><text class="sub" x="705" y="137">orientation compensée</text>
-        <path d="M764 151 V208 H651"/>
-        <rect x="551" y="190" width="100" height="38"/><text x="565" y="214">S8 · Fiche</text>
-        <path d="M601 228 V287" style="stroke:#6be4d3;stroke-dasharray:4 4"/>
-        <text class="sub" x="615" y="267">contact axial</text>
-        <rect x="551" y="287" width="100" height="38"/><text x="563" y="311">S9 · Prise</text>
-        <path d="M551 306 H62 V151"/>
-        <text class="sub" x="241" y="300">Encastrement au bâti</text>
+      <h3 style="margin-top:25px">Graphe des liaisons</h3>
+      <div class="diagram-scroll"><svg class="kinematic-svg" viewBox="0 0 850 330" role="img" aria-label="PLATFORM_1 porte le longeron et trois branches rotule glissière rotule vers PLATFORM_2. PLATFORM_2 porte le bras A1 A2 A3 A4 et BOX_1. La bouée porte BOX_2. Capture et docking sont deux liaisons temporaires distinctes.">
+        <rect x="15" y="110" width="125" height="48"/><text x="27" y="133">PLATFORM_1</text><text x="27" y="149" class="sub">support supérieur</text>
+        <path d="M140 135 H160 V40 H185 M160 135 H185 M160 135 V220 H185 M365 40 H385 V135 H410 M365 135 H410 M365 220 H385 V135"/>
+        <rect x="185" y="20" width="180" height="40"/><text x="199" y="45">C1 · ○ — P(L1) — ○</text>
+        <rect x="185" y="115" width="180" height="40"/><text x="199" y="140">C2 · ○ — P(L2) — ○</text>
+        <rect x="185" y="200" width="180" height="40"/><text x="199" y="225">C3 · ○ — P(L3) — ○</text>
+        <text class="sub" x="195" y="86">Trois branches spatiales</text>
+        <text class="sub" x="195" y="180">Rotules : hypothèse 3D</text>
+        <rect x="410" y="110" width="125" height="48"/><text x="422" y="132">PLATFORM_2</text><text class="sub" x="428" y="149">cadre de capture</text>
+        <path d="M535 133 H565"/><rect x="565" y="105" width="265" height="58"/><text x="579" y="128">A1 → A2 → A3 → A4 → BOX_1</text><text class="sub" x="580" y="150">3 pivots Y + rotation axiale locale</text>
+        <path d="M75 110 V66"/><rect x="15" y="23" width="125" height="43"/><text x="28" y="49">LONGERON</text>
+        <text class="sub" x="30" y="87">Encastrement</text>
+        <path d="M75 158 V281 H472 V158" style="stroke-dasharray:5 5"/><text class="sub" x="113" y="277">Guidage supposé : X = Y = lacet = 0</text>
+        <rect x="570" y="255" width="125" height="45"/><text x="582" y="276">BOUÉE</text><text class="sub" x="582" y="293">+ BOX_2 fixé</text>
+        <path d="M472 158 V231 H610 V255 M780 163 V276 H695" style="stroke:#6be4d3;stroke-dasharray:4 4"/>
+        <text class="sub" x="486" y="215">Capture temporaire</text><text class="sub" x="702" y="217">Docking</text><text class="sub" x="702" y="232">temporaire</text>
       </svg></div>
-      <table class="model-table"><thead><tr><th>Ensemble</th><th>Modèle retenu</th><th>Conséquence</th></tr></thead><tbody>
-        <tr><td>Suspension</td><td>3 branches SPS + guidage idéal</td><td>Les 3 longueurs seules ne fixent pas une pose à 6 coordonnées. Le guidage est une hypothèse, à concevoir.</td></tr>
-        <tr><td>Bras</td><td>J1 vertical ; J2 et J3 parallèles<br>Segments de 160 et 215 mm</td><td>Dimensions révisées (origine : 135 et 125 mm) pour franchir l’anneau et atteindre S9.</td></tr>
-        <tr><td>Outil</td><td>Déport de 75 mm sous le poignet ; orientation absolue constante</td><td>Cette compensation nécessite un mécanisme supplémentaire. Le bras 3R seul ne commande pas librement position et orientation.</td></tr>
-        <tr><td>Accostage</td><td>Δr ≤ 1,5 mm ; |ΔZ| ≤ 0,5 mm ; angles ≤ 1°</td><td>Seuils de démonstration, incluant l’orientation du détrompage. Broches : engagement de 5 mm.</td></tr>
+      <table class="model-table"><thead><tr><th>Élément</th><th>Données du croquis</th><th>Choix de maquette</th></tr></thead><tbody>
+        <tr><td>PLATFORM_1</td><td>Longueur ≈ 5 m ; longeron cylindrique suivant Y</td><td>Largeur 2,7 m ; longeron Ø 0,54 m, longueur 2,2 m.</td></tr>
+        <tr><td>Cadre et bouée</td><td>Extensions ≈ 1 m ; col Ø 1 m ; séparation caractéristique 3–4 m</td><td>Cadre 3 × 2,2 m ; ouverture carrée 1,4 m ; séparation nominale 3,65 m.</td></tr>
+        <tr><td>Suspension</td><td>3 vérins ; implantation exacte et guidage inconnus</td><td>Ancrages triangulaires non équilatéraux ; rotules ; courses illustratives 0–1 100 mm. Guidage idéal, sans pièce inventée.</td></tr>
+        <tr><td>Bras</td><td>A1–A3 pivots Y ; A4 rotation locale ; aucune tourelle ni glissière terminale</td><td>Segments 1,30 m et 0,95 m ; déport terminal total 0,50 m. Limites angulaires illustratives.</td></tr>
+        <tr><td>Capture</td><td>Deux flèches opposées ; mécanisme interne inconnu</td><td>Mâchoires coulissantes suivant X, présentées comme hypothèse. Recentrage prescrit, sans simulation des efforts.</td></tr>
+        <tr><td>Docking</td><td>BOX_1 porté par le bras ; BOX_2 fixé à la bouée</td><td>Verrouillage symbolique si capture engagée et interfaces alignées. Seuils : 8 mm transversal, ± 2 mm axial, 1°.</td></tr>
       </tbody></table>
-      <p>La vue « Schéma 3D » représente les axes et segments articulés. Elle ne revendique pas une conformité normative. La simulation ne dimensionne ni le guidage, ni le poignet, ni les efforts de contact ; ses contrôles concernent le bras et le boîtier face à l’anneau, ainsi que l’accostage sur S9.</p>
+      <p>Les trois vérins seuls ne déterminent pas six coordonnées de pose. Le modèle réduit néglige X, Y et le lacet du cadre. Un bras plan à quatre articulations ne peut pas compenser arbitrairement une pose spatiale : le cycle met le cadre à niveau et centre la bouée avant le docking fin.</p>
+      <p>Les contacts, la bouée, les vérins, le cadre, la plateforme et le longeron font l’objet de contrôles géométriques simplifiés. Cette maquette ne valide pas le dimensionnement mécanique ni toutes les collisions et n’attribue aucun détail interne aux boîtiers.</p>
+      <p>Source : <a href="specification_liaisons_docking_solution_3verins_bras_articule.md">spécification de la solution à trois vérins et bras articulé</a>.</p>
     </div>
   </dialog>
-  <script>
-    if (!window.THREE || !window.DockingModel) {
-      document.getElementById('canvas-container').insertAdjacentHTML('beforeend', '<div class="error-screen">La bibliothèque 3D est introuvable. Conserver le dossier vendor et les fichiers docking-model.js et docking.css à côté du HTML.</div>');
-      throw new Error('Dépendances locales manquantes');
-    }
-    const Model = window.DockingModel;
-    const C = Model.C;
-    // Scene geometry uses Three.js Y-up; the mechanical vertical is named Z.
-    const container = document.getElementById('canvas-container');
-    const labelsLayer = document.getElementById('labels-layer');
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0f1d);
-    scene.fog = new THREE.FogExp2(0x0a0f1d, 0.025);
-
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(8, 5.4, 10.5);
-
-    let renderer;
-    try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
-    catch (error) {
-      container.insertAdjacentHTML('beforeend', '<div class="error-screen">Le rendu 3D nécessite WebGL. Activer l’accélération graphique du navigateur puis recharger la page.</div>');
-      throw error;
-    }
-    renderer.domElement.setAttribute('aria-label', 'Mécanisme de docking en trois dimensions');
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
-    container.appendChild(renderer.domElement);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.target.set(0, 1.15, 0);
-    controls.maxPolarAngle = Math.PI / 2 + 0.1;
-    controls.minDistance = 3;
-    controls.maxDistance = 25;
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-
-    const mainSpot = new THREE.DirectionalLight(0xffffff, 1.3);
-    mainSpot.position.set(8, 14, 8);
-    mainSpot.castShadow = true;
-    mainSpot.shadow.mapSize.width = 2048;
-    mainSpot.shadow.mapSize.height = 2048;
-    mainSpot.shadow.camera.near = 1;
-    mainSpot.shadow.camera.far = 30;
-    mainSpot.shadow.bias = -0.0005;
-    const shadowD = 6;
-    mainSpot.shadow.camera.left = -shadowD;
-    mainSpot.shadow.camera.right = shadowD;
-    mainSpot.shadow.camera.top = shadowD;
-    mainSpot.shadow.camera.bottom = -shadowD;
-    scene.add(mainSpot);
-
-    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.6);
-    fillLight.position.set(-8, 6, -6);
-    scene.add(fillLight);
-
-    const rimLight = new THREE.PointLight(0xf43f5e, 0.5, 15);
-    rimLight.position.set(0, 2, 0);
-    scene.add(rimLight);
-
-    // Grid Floor
-    const gridHelper = new THREE.GridHelper(16, 32, 0x334155, 0x1e293b);
-    gridHelper.position.y = -2.5;
-    scene.add(gridHelper);
-
-    // Catch floor for soft shadows
-    const shadowFloorGeo = new THREE.PlaneGeometry(30, 30);
-    const shadowFloorMat = new THREE.ShadowMaterial({ opacity: 0.35 });
-    const shadowFloor = new THREE.Mesh(shadowFloorGeo, shadowFloorMat);
-    shadowFloor.rotation.x = -Math.PI / 2;
-    shadowFloor.position.y = -2.49;
-    shadowFloor.receiveShadow = true;
-    scene.add(shadowFloor);
-
-    // Materials for Solid / Realistic Render
-    const matTruss = new THREE.MeshStandardMaterial({
-      color: 0x94a3b8,
-      metalness: 0.85,
-      roughness: 0.3,
-    });
-    const matBall = new THREE.MeshPhysicalMaterial({
-      color: 0xef4444,
-      metalness: 0.2,
-      roughness: 0.15,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.1
-    });
-    const matCylUpper = new THREE.MeshStandardMaterial({
-      color: 0x475569,
-      metalness: 0.8,
-      roughness: 0.25
-    });
-    const matRodChrome = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      metalness: 0.95,
-      roughness: 0.05
-    });
-    const matPlatformRing = new THREE.MeshPhysicalMaterial({
-      color: 0xdc2626,
-      metalness: 0.15,
-      roughness: 0.25,
-      clearcoat: 0.6
-    });
-    const matRobotBody = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      metalness: 0.3,
-      roughness: 0.35
-    });
-    const matJoint = new THREE.MeshStandardMaterial({
-      color: 0x16a34a,
-      metalness: 0.4,
-      roughness: 0.3
-    });
-    const matBoxUpper = new THREE.MeshStandardMaterial({
-      color: 0x18181b,
-      metalness: 0.4,
-      roughness: 0.5
-    });
-    const matBoxLower = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      metalness: 0.5,
-      roughness: 0.4
-    });
-
-    let isSchematicMode = false;
-    let showLabels = true;
-    let isAutoCycle = false;
-
-    const s0Group = new THREE.Group();
-    s0Group.position.set(0, 4.2, 0);
-    scene.add(s0Group);
-
-    // Ceiling Base Plate
-    const ceilingPlateGeo = new THREE.BoxGeometry(7.5, 0.2, 7.5);
-    const ceilingPlate = new THREE.Mesh(ceilingPlateGeo, matTruss);
-    ceilingPlate.position.y = 0.6;
-    ceilingPlate.receiveShadow = true;
-    // Open truss keeps the working volume visible; no opaque ceiling slab.
-    ceilingPlate.visible = false;
-    s0Group.add(ceilingPlate);
-
-    // Triangular Truss Framework
-    function createTrussBeam(len) {
-      const beamGroup = new THREE.Group();
-      const railGeo = new THREE.BoxGeometry(len, 0.08, 0.08);
-      const topRail = new THREE.Mesh(railGeo, matTruss);
-      topRail.position.y = 0.25;
-      const bottomRail = new THREE.Mesh(railGeo, matTruss);
-      bottomRail.position.y = -0.25;
-      topRail.castShadow = true;
-      bottomRail.castShadow = true;
-      beamGroup.add(topRail);
-      beamGroup.add(bottomRail);
-
-      // Diagonal cross bars
-      const numBays = Math.floor(len / 0.5);
-      const bayStep = len / numBays;
-      for (let i = 0; i < numBays; i++) {
-        const x1 = -len / 2 + i * bayStep;
-        const x2 = x1 + bayStep;
-        const diagGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.6);
-        const diag1 = new THREE.Mesh(diagGeo, matTruss);
-        diag1.position.x = (x1 + x2) / 2;
-        diag1.rotation.z = Math.atan2(0.5, bayStep);
-        beamGroup.add(diag1);
-      }
-      return beamGroup;
-    }
-
-    const R_top = 2.9; // Radius of upper attachment points A1, A2, A3
-    const upperAnchorAngles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
-    const upperAnchors = [];
-
-    upperAnchorAngles.forEach((ang, idx) => {
-      const armGroup = new THREE.Group();
-      armGroup.rotation.y = ang;
-
-      const beam = createTrussBeam(R_top);
-      beam.position.x = R_top / 2;
-      armGroup.add(beam);
-
-      // Hanging mount
-      const mountGeo = new THREE.CylinderGeometry(0.12, 0.16, 0.35, 16);
-      const mount = new THREE.Mesh(mountGeo, matTruss);
-      mount.position.set(R_top, -0.3, 0);
-      mount.castShadow = true;
-      armGroup.add(mount);
-
-      s0Group.add(armGroup);
-
-      const ax = R_top * Math.cos(ang);
-      const az = -R_top * Math.sin(ang);
-      const anchorPos = new THREE.Vector3(ax, s0Group.position.y - 0.45, az);
-      upperAnchors.push(anchorPos);
-
-      // Rotule A_i (Sphère rouge)
-      const ballA = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), matBall);
-      ballA.position.copy(anchorPos);
-      ballA.castShadow = true;
-      scene.add(ballA);
-    });
-
-    const R_platform_outer = 2.45;
-    const R_platform_inner = 0.95; // Large central hole
-    const platformThickness = 0.14;
-
-    const ringShape = new THREE.Shape();
-    ringShape.absarc(0, 0, R_platform_outer, 0, Math.PI * 2, false);
-    const holePath = new THREE.Path();
-    holePath.absarc(0, 0, R_platform_inner, 0, Math.PI * 2, true);
-    ringShape.holes.push(holePath);
-
-    const ringExtrudeSettings = {
-      depth: platformThickness,
-      bevelEnabled: true,
-      bevelSegments: 4,
-      steps: 1,
-      bevelSize: 0.03,
-      bevelThickness: 0.03
-    };
-
-    const ringGeometry = new THREE.ExtrudeGeometry(ringShape, ringExtrudeSettings);
-    ringGeometry.rotateX(-Math.PI / 2);
-    ringGeometry.translate(0, -platformThickness / 2, 0);
-
-    const platformGroup = new THREE.Group();
-    platformGroup.position.set(0, 0.4, 0);
-    scene.add(platformGroup);
-
-    const platformMesh = new THREE.Mesh(ringGeometry, matPlatformRing);
-    platformMesh.castShadow = true;
-    platformMesh.receiveShadow = true;
-    platformGroup.add(platformMesh);
-
-    // Outer rim lip for realistic aesthetic
-    const outerRimGeo = new THREE.TorusGeometry(R_platform_outer + 0.02, 0.04, 16, 64);
-    outerRimGeo.rotateX(Math.PI / 2);
-    const outerRim = new THREE.Mesh(outerRimGeo, matPlatformRing);
-    platformGroup.add(outerRim);
-
-    // Lower attachment balls B1, B2, B3 on ring periphery (120 deg apart)
-    const lowerAnchorAngles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
-    const lowerAnchorLocalPositions = [];
-    const lowerBallMeshes = [];
-
-    lowerAnchorAngles.forEach((ang) => {
-      const bx = R_platform_outer * Math.cos(ang);
-      const bz = -R_platform_outer * Math.sin(ang);
-      const localPos = new THREE.Vector3(bx, 0, bz);
-      lowerAnchorLocalPositions.push(localPos);
-
-      // Bracket ear on platform
-      const earGeo = new THREE.BoxGeometry(0.2, 0.12, 0.2);
-      const ear = new THREE.Mesh(earGeo, matTruss);
-      ear.position.copy(localPos);
-      platformGroup.add(ear);
-
-      // Rotule B_i (Sphère rouge)
-      const ballB = new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 24), matBall);
-      ballB.castShadow = true;
-      ballB.position.copy(localPos);
-      platformGroup.add(ballB);
-      lowerBallMeshes.push(ballB);
-    });
-
-    const cylinders = [];
-    for (let i = 0; i < 3; i++) {
-      const cylGroup = new THREE.Group();
-
-      // Barrel (Corps de vérin - upper cylinder)
-      const barrelLen = 2.0;
-      const barrelGeo = new THREE.CylinderGeometry(0.12, 0.12, barrelLen, 24);
-      barrelGeo.translate(0, -barrelLen / 2, 0);
-      const barrel = new THREE.Mesh(barrelGeo, matCylUpper);
-      barrel.castShadow = true;
-
-      // Barrel Cap
-      const capGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.18, 24);
-      capGeo.translate(0, -barrelLen + 0.09, 0);
-      const cap = new THREE.Mesh(capGeo, matTruss);
-      barrel.add(cap);
-
-      // Piston Rod (Tige de vérin chromée - sliding in)
-      const rodLen = 2.15;
-      const rodGeo = new THREE.CylinderGeometry(0.065, 0.065, rodLen, 24);
-      rodGeo.translate(0, rodLen / 2, 0);
-      const rod = new THREE.Mesh(rodGeo, matRodChrome);
-      rod.castShadow = true;
-
-      cylGroup.add(barrel);
-      cylGroup.add(rod);
-      scene.add(cylGroup);
-
-      cylinders.push({
-        group: cylGroup,
-        barrel: barrel,
-        rod: rod,
-        anchorTop: upperAnchors[i],
-        localAnchorBottom: lowerAnchorLocalPositions[i]
-      });
-    }
-
-    // Robot base located on ring margin between inner and outer radius
-    const robotBaseRadius = (R_platform_outer + R_platform_inner) / 2 + 0.25;
-    const robotBaseAngle = THREE.MathUtils.degToRad(-15); // Slightly offset from X axis
-    const robotBaseX = robotBaseRadius * Math.cos(robotBaseAngle);
-    const robotBaseZ = -robotBaseRadius * Math.sin(robotBaseAngle);
-
-    const robotBaseGroup = new THREE.Group();
-    robotBaseGroup.position.set(robotBaseX, platformThickness / 2, robotBaseZ);
-    platformGroup.add(robotBaseGroup);
-
-    // Circular flange mount
-    const flangeGeo = new THREE.CylinderGeometry(0.45, 0.5, 0.1, 32);
-    const flange = new THREE.Mesh(flangeGeo, matTruss);
-    flange.position.y = 0.05;
-    robotBaseGroup.add(flange);
-
-    // J1: Turret (S5 - Azimuth rotation around vertical axis)
-    const turretGroup = new THREE.Group();
-    turretGroup.position.y = 0.1;
-    robotBaseGroup.add(turretGroup);
-
-    const turretBodyGeo = new THREE.CylinderGeometry(0.32, 0.38, 0.35, 24);
-    const turretBody = new THREE.Mesh(turretBodyGeo, matRobotBody);
-    turretBody.position.y = 0.175;
-    turretBody.castShadow = true;
-    turretGroup.add(turretBody);
-
-    // J1 Pivot Indicator ring
-    const j1IndicatorGeo = new THREE.TorusGeometry(0.36, 0.025, 12, 32);
-    j1IndicatorGeo.rotateX(Math.PI / 2);
-    const j1Indicator = new THREE.Mesh(j1IndicatorGeo, matJoint);
-    j1Indicator.position.y = 0.05;
-    turretGroup.add(j1Indicator);
-
-    // J2 Shoulder Pivot (horizontal axis)
-    const shoulderPivotY = 0.38;
-    const shoulderGroup = new THREE.Group();
-    shoulderGroup.position.set(0, shoulderPivotY, 0);
-    turretGroup.add(shoulderGroup);
-
-    const shoulderJointGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.42, 24);
-    shoulderJointGeo.rotateX(Math.PI / 2);
-    const shoulderJoint = new THREE.Mesh(shoulderJointGeo, matJoint);
-    shoulderJoint.castShadow = true;
-    shoulderGroup.add(shoulderJoint);
-
-    // S6: Main Arm Boom
-    const arm1Length = C.l1;
-    const arm1Group = new THREE.Group();
-    shoulderGroup.add(arm1Group);
-
-    const arm1MeshGeo = new THREE.BoxGeometry(0.18, arm1Length, 0.24);
-    arm1MeshGeo.translate(0, arm1Length / 2, 0);
-    const arm1Mesh = new THREE.Mesh(arm1MeshGeo, matRobotBody);
-    arm1Mesh.castShadow = true;
-    arm1Group.add(arm1Mesh);
-
-    // J3 Elbow Pivot (horizontal axis)
-    const elbowGroup = new THREE.Group();
-    elbowGroup.position.set(0, arm1Length, 0);
-    arm1Group.add(elbowGroup);
-
-    const elbowJointGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.38, 24);
-    elbowJointGeo.rotateX(Math.PI / 2);
-    const elbowJoint = new THREE.Mesh(elbowJointGeo, matJoint);
-    elbowJoint.castShadow = true;
-    elbowGroup.add(elbowJoint);
-
-    // S7: Forearm Boom
-    const arm2Length = C.l2;
-    const arm2Group = new THREE.Group();
-    elbowGroup.add(arm2Group);
-
-    const arm2MeshGeo = new THREE.BoxGeometry(0.14, arm2Length, 0.2);
-    arm2MeshGeo.translate(0, arm2Length / 2, 0);
-    const arm2Mesh = new THREE.Mesh(arm2MeshGeo, matRobotBody);
-    arm2Mesh.castShadow = true;
-    arm2Group.add(arm2Mesh);
-
-    // Wrist / Tool holder flange at end of forearm
-    const wristGroup = new THREE.Group();
-    wristGroup.position.set(0, arm2Length, 0);
-    arm2Group.add(wristGroup);
-
-    const wristJointGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.16, 24);
-    const wristJoint = new THREE.Mesh(wristJointGeo, matJoint);
-    wristJoint.position.y = 0.08;
-    wristGroup.add(wristJoint);
-
-    // S8: connector mounted below an explicitly modelled orientation compensator.
-    const upperBoxGroup = new THREE.Group();
-    const toolCarrier = new THREE.Group();
-    wristGroup.add(toolCarrier);
-    upperBoxGroup.position.set(0, -C.toolDrop, 0);
-    toolCarrier.add(upperBoxGroup);
-    const toolStem = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.2, 16), matRodChrome);
-    toolStem.position.y = -0.1;
-    toolCarrier.add(toolStem);
-    const gimbalMaterial = new THREE.MeshStandardMaterial({ color: 0x6be4d3, metalness: 0.6, roughness: 0.3 });
-    [0, 1, 2].forEach(axis => {
-      const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.18 + axis * 0.015, 0.017, 8, 32), gimbalMaterial);
-      if (axis === 1) hoop.rotation.x = Math.PI / 2;
-      if (axis === 2) hoop.rotation.y = Math.PI / 2;
-      toolCarrier.add(hoop);
-    });
-
-    const boxW = 0.9, boxH = 0.55, boxD = 0.8;
-    const upperBoxGeo = new THREE.BoxGeometry(boxW, boxH, boxD);
-    const upperBox = new THREE.Mesh(upperBoxGeo, matBoxUpper);
-    upperBox.position.set(0, boxH / 2, 0);
-    upperBox.castShadow = true;
-    upperBoxGroup.add(upperBox);
-
-    // Metallic electrical connector pins under upper box
-    const pinGroup = new THREE.Group();
-    for (let px = -0.25; px <= 0.25; px += 0.25) {
-      for (let pz = -0.2; pz <= 0.2; pz += 0.2) {
-        const pinGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.12, 12);
-        const pin = new THREE.Mesh(pinGeo, matRodChrome);
-        pin.position.set(px, 0.01, pz);
-        pinGroup.add(pin);
-      }
-    }
-    upperBoxGroup.add(pinGroup);
-
-    // S9: Fixed Lower Black Box (Receptacle on ground)
-    const s9Group = new THREE.Group();
-    s9Group.position.set(0, -1.9, 0);
-    scene.add(s9Group);
-
-    const lowerBoxBaseGeo = new THREE.BoxGeometry(boxW + 0.3, 0.1, boxD + 0.3);
-    const lowerBoxBase = new THREE.Mesh(lowerBoxBaseGeo, matTruss);
-    lowerBoxBase.position.y = -0.05;
-    s9Group.add(lowerBoxBase);
-
-    const lowerBoxGeo = new THREE.BoxGeometry(boxW, boxH, boxD);
-    const lowerBox = new THREE.Mesh(lowerBoxGeo, matBoxLower);
-    lowerBox.position.y = boxH / 2;
-    lowerBox.castShadow = true;
-    lowerBox.receiveShadow = true;
-    s9Group.add(lowerBox);
-
-    // Receptacle socket holes on top of lower box
-    const socketPlateGeo = new THREE.BoxGeometry(boxW * 0.8, 0.04, boxD * 0.8);
-    const socketPlateMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.3, metalness: 0.7 });
-    const socketPlate = new THREE.Mesh(socketPlateGeo, socketPlateMat);
-    socketPlate.position.y = boxH + 0.02;
-    s9Group.add(socketPlate);
-
-    const lineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 4.2, 0),
-      new THREE.Vector3(0, -2.4, 0)
-    ]);
-    const lineMat = new THREE.LineDashedMaterial({
-      color: 0x38bdf8,
-      linewidth: 2,
-      dashSize: 0.15,
-      gapSize: 0.08
-    });
-    const alignLine = new THREE.Line(lineGeo, lineMat);
-    alignLine.computeLineDistances();
-    scene.add(alignLine);
-
-    // Circular targeting reticle on the hole plane
-    const reticleGeo = new THREE.RingGeometry(0.12, 0.14, 32);
-    reticleGeo.rotateX(-Math.PI / 2);
-    const reticleMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
-    const reticle = new THREE.Mesh(reticleGeo, reticleMat);
-    reticle.position.y = C.socketY + 0.006;
-    scene.add(reticle);
-
-
-    // Receptacle detail: nine sockets matching the plug pin layout.
-    for (let x = -0.25; x <= 0.25; x += 0.25) for (let z = -0.2; z <= 0.2; z += 0.2) {
-      const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.009, 16),
-        new THREE.MeshStandardMaterial({ color: 0x071416, roughness: 0.6 }));
-      socket.position.set(x, boxH + 0.044, z);
-      s9Group.add(socket);
-    }
-    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.5, 0.98), matCylUpper);
-    pedestal.position.set(0, -2.2, 0);
-    scene.add(pedestal);
-
-    const pathGeometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0.38, C.homeY, 0.10), new THREE.Vector3(0, C.homeY, 0),
-      new THREE.Vector3(0, C.socketY, 0)
-    ]);
-    const plannedPath = new THREE.Line(pathGeometry, new THREE.LineDashedMaterial({
-      color: 0x6be4d3, dashSize: 0.07, gapSize: 0.05, transparent: true, opacity: 0.5
-    }));
-    plannedPath.computeLineDistances();
-    scene.add(plannedPath);
-    const tcpMarker = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0x6be4d3, depthTest: false }));
-    tcpMarker.renderOrder = 10;
-    scene.add(tcpMarker);
-    const errorLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
-      new THREE.LineBasicMaterial({ color: 0xf4bc69, transparent: true, opacity: 0.8 }));
-    scene.add(errorLine);
-
-    const axesOrigin = new THREE.Vector3(-3.1, -2.42, 1.9);
-    [[1,0,0,0xe98c8c],[0,0,-1,0x7ddb9c],[0,1,0,0x75b9fc]].forEach(a =>
-      scene.add(new THREE.ArrowHelper(new THREE.Vector3(...a.slice(0,3)), axesOrigin, 0.6, a[3], 0.12, 0.07)));
-
-    // A distinct skeleton overlay shows the actual geometric chain.
-    const solidMaterials = [];
-    scene.traverse(o => {
-      if (o.isMesh && o !== tcpMarker && o !== shadowFloor) {
-        const solid = o.material;
-        const ghost = solid.clone();
-        ghost.transparent = true; ghost.opacity = 0.13; ghost.depthWrite = false;
-        solidMaterials.push({ object: o, solid, ghost });
-      }
-    });
-    const skeleton = new THREE.Group();
-    skeleton.visible = false;
-    scene.add(skeleton);
-    function skeletonLink(color) {
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 1, 10),
-        new THREE.MeshBasicMaterial({ color, depthTest: false }));
-      mesh.renderOrder = 5;
-      skeleton.add(mesh);
-      return mesh;
-    }
-    const skeletonLinks = [0x6be4d3,0x6be4d3,0x6be4d3,0xf4bc69,0xf4bc69,0x6be4d3].map(skeletonLink);
-    const nodePoints = Array.from({length: 10}, () => {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12),
-        new THREE.MeshBasicMaterial({ color: 0xe3f2f8, depthTest: false }));
-      mesh.renderOrder = 6; skeleton.add(mesh); return mesh;
-    });
-    const normalY = new THREE.Vector3(0, 1, 0), down = new THREE.Vector3(0, -1, 0);
-    const workA = new THREE.Vector3(), workB = new THREE.Vector3(), worldQ = new THREE.Quaternion();
-    const state = {
-      strokes: [100,100,100], pose: Model.solvePlatform([100,100,100]), joints: [0,0,0],
-      time: 0, speed: 1, manual: false, compensated: true, metrics: null
-    };
-    const $ = id => document.getElementById(id);
-    const number = (x, digits = 1) => (Math.abs(x) < 0.000001 ? 0 : x).toLocaleString('fr-FR', {
-      minimumFractionDigits: digits, maximumFractionDigits: digits
-    });
-    const phaseNotes = [
-      'Centrer la fiche au-dessus du passage, avec une garde verticale.',
-      'Descendre sur l’axe de S9. Le bras et le boîtier traversent le passage libre.',
-      'Réduire la vitesse et engager les broches sur les derniers 5 mm.',
-      'Maintenir l’accostage pendant 2 s. L’état connecté est calculé sur la pose réelle.',
-      'Dégager la fiche par une remontée axiale jusqu’à la position haute.'
-    ];
-    const actuatorNames = ['Vérin 1 · A1 → B1', 'Vérin 2 · A2 → B2', 'Vérin 3 · A3 → B3'];
-    const jointNames = ['J1 · azimut de la tourelle', 'J2 · épaule', 'J3 · coude'];
-    function buildControls(target, names, prefix, limits, unit) {
-      $(target).innerHTML = names.map((name, i) => '<div class="control '+(prefix === 'j' ? 'robot' : '')+'">' +
-        '<div class="control-label"><label for="slide-'+prefix+(i+1)+'">'+name+'</label><output id="txt-'+prefix+(i+1)+'" for="slide-'+prefix+(i+1)+'"></output></div>' +
-        '<input id="slide-'+prefix+(i+1)+'" type="range" min="'+limits[i][0]+'" max="'+limits[i][1]+'" step="0.1" aria-label="'+name+'">' +
-        '<div class="limits"><span>'+limits[i][0]+' '+unit+'</span><span>'+limits[i][1]+' '+unit+'</span></div></div>').join('');
-    }
-    buildControls('actuator-controls', actuatorNames, 's', [[0,200],[0,200],[0,200]], 'mm');
-    buildControls('joint-controls', jointNames, 'j', [[-180,180],[-90,160],[0,150]], '°');
-    let cumulativeTime = 0;
-    Model.phases.forEach((p, i) => {
-      const button = document.createElement('button'), startTime = cumulativeTime;
-      button.title = p.name; button.setAttribute('aria-label', 'Aller à l’étape '+(i+1)+' : '+p.name);
-      button.addEventListener('click', () => seek(startTime + (i ? 0.001 : 0)));
-      $('phase-list').appendChild(button);
-      cumulativeTime += p.duration;
-    });
-
-    const labelsData = [
-      { text: 'S8 · FICHE', target: upperBoxGroup, offset: [0,0.6,0], kind: 'tool' },
-      { text: 'S9 · PRISE FIXE', target: s9Group, offset: [0,-0.1,0.7], kind: 'tool' },
-      { text: 'J2 · ÉPAULE', target: shoulderGroup, offset: [0,0.2,0] },
-      { text: 'J3 · COUDE', target: elbowGroup, offset: [0,0.22,0] },
-      { text: 'S4 · ANNEAU', target: platformGroup, offset: [-1.8,0.18,1] },
-      { text: 'S0 · BÂTI', target: s0Group, offset: [0,0.4,0] },
-      { text: 'A1 · ROTULE', position: Model.anchors[0].top },
-      { text: 'B1 · ROTULE', target: lowerBallMeshes[0], offset: [0,0.25,0] },
-      { text: 'X', position: [-2.37,-2.42,1.9] },
-      { text: 'Y', position: [-3.1,-2.42,1.16] },
-      { text: 'Z', position: [-3.1,-1.68,1.9] }
-    ];
-    labelsData.forEach(label => {
-      label.element = document.createElement('div'); label.element.className = 'tag-bubble';
-      label.element.textContent = label.text; label.element.dataset.kind = label.kind || '';
-      labelsLayer.appendChild(label.element);
-    });
-    function updateLabels() {
-      labelsLayer.hidden = !showLabels;
-      if (!showLabels) return;
-      const w = container.clientWidth, h = container.clientHeight, occupied = [];
-      labelsData.forEach(label => {
-        if (label.target) label.target.localToWorld(workA.fromArray(label.offset || [0,0,0]));
-        else workA.fromArray(label.position);
-        workA.project(camera);
-        const x = (workA.x + 1) * w / 2, y = (1 - workA.y) * h / 2;
-        const width = label.text.length * 6.5 + 14;
-        const box = { l: x-width/2, r: x+width/2, t: y-24, b: y+2 };
-        const hidden = workA.z < -1 || workA.z > 1 || box.l < 5 || box.r > w-5 ||
-          box.t < (w < 750 ? 175 : 145) || box.b > h - (w < 750 ? 210 : 155) ||
-          occupied.some(b => box.l < b.r && box.r > b.l && box.t < b.b && box.b > b.t);
-        label.element.hidden = hidden;
-        if (!hidden) {
-          occupied.push(box); label.element.style.left = x+'px'; label.element.style.top = y+'px';
-        }
-      });
-    }
-    function connectMesh(mesh, a, b) {
-      workA.fromArray(a); workB.fromArray(b);
-      mesh.position.copy(workA).add(workB).multiplyScalar(0.5);
-      mesh.scale.y = workA.distanceTo(workB);
-      mesh.quaternion.setFromUnitVectors(normalY, workB.sub(workA).normalize());
-    }
-    function drawMechanism() {
-      const p = state.pose, m = state.metrics;
-      platformGroup.position.set(0, p.h, 0);
-      platformGroup.rotation.set(p.pitch, 0, p.roll);
-      turretGroup.rotation.y = THREE.MathUtils.degToRad(state.joints[0]);
-      shoulderGroup.rotation.z = THREE.MathUtils.degToRad(state.joints[1]);
-      elbowGroup.rotation.z = THREE.MathUtils.degToRad(state.joints[2]);
-      platformGroup.updateMatrixWorld(true);
-      wristGroup.getWorldQuaternion(worldQ);
-      toolCarrier.quaternion.copy(state.compensated ? worldQ.invert() : new THREE.Quaternion());
-      platformGroup.updateMatrixWorld(true);
-      cylinders.forEach((cyl, i) => {
-        workA.copy(cyl.anchorTop);
-        workB.fromArray(Model.toWorld(Model.anchors[i].bottom, p));
-        const distance = workA.distanceTo(workB);
-        cyl.group.position.copy(workA);
-        cyl.group.quaternion.setFromUnitVectors(down, workB.sub(workA).normalize());
-        cyl.rod.position.set(0, -distance, 0);
-        connectMesh(skeletonLinks[i], Model.anchors[i].top, Model.toWorld(Model.anchors[i].bottom, p));
-        nodePoints[i].position.fromArray(Model.anchors[i].top);
-        nodePoints[i+3].position.fromArray(Model.toWorld(Model.anchors[i].bottom, p));
-      });
-      connectMesh(skeletonLinks[3], m.shoulder, m.elbow);
-      connectMesh(skeletonLinks[4], m.elbow, m.wrist);
-      connectMesh(skeletonLinks[5], m.wrist, m.tcp);
-      [m.shoulder,m.elbow,m.wrist,m.tcp].forEach((v,i) => nodePoints[i+6].position.fromArray(v));
-      tcpMarker.position.fromArray(m.tcp);
-      const pos = errorLine.geometry.attributes.position;
-      pos.setXYZ(0, ...m.tcp); pos.setXYZ(1, 0, m.tcp[1], 0); pos.needsUpdate = true;
-      errorLine.geometry.computeBoundingSphere();
-      socketPlateMat.color.setHex(m.connected ? 0x6be4d3 : 0x315f67);
-      socketPlateMat.emissive.setHex(m.connected ? 0x145f50 : 0x000000);
-      reticleMat.color.setHex(m.aligned ? 0x6be4d3 : 0xf4bc69);
-      scene.updateMatrixWorld(true);
-    }
-    function updateUI() {
-      const m = state.metrics, p = Model.trajectory(state.time);
-      $('val-delta-r').textContent = number(m.radial * C.mm);
-      $('val-delta-z').textContent = number(m.gap * C.mm);
-      $('val-angle').textContent = number(m.angle);
-      const insertion = m.aligned && !m.collision ? m.insertion * 100 : 0;
-      $('val-insertion').textContent = number(insertion, 0);
-      $('key-angle').textContent = 'détrompage : '+number(m.keyAngle)+'° / 1°';
-      $('dock-progress-bar').style.width = insertion+'%';
-      $('dock-badge').textContent = m.collision ? 'Interférence' : m.connected ? '● Connecté' : m.aligned ? (m.insertion > 0 ? 'Insertion en cours' : 'Axe aligné') : 'À aligner';
-      $('dock-badge').dataset.tone = m.collision ? 'danger' : !m.aligned ? 'warn' : '';
-      $('pose-height').textContent = number(state.pose.h * C.mm)+' mm';
-      $('pose-pitch').textContent = number(state.pose.pitch * 180 / Math.PI)+'°';
-      $('pose-roll').textContent = number(-state.pose.roll * 180 / Math.PI)+'°';
-      $('closure-error').textContent = 'Erreur de fermeture : '+(state.pose.residual * C.mm).toExponential(1)+' mm';
-      state.strokes.forEach((v,i) => { $('slide-s'+(i+1)).value = v; $('txt-s'+(i+1)).textContent = number(v)+' mm'; });
-      state.joints.forEach((v,i) => { $('slide-j'+(i+1)).value = v; $('txt-j'+(i+1)).textContent = number(v)+'°'; });
-      $('compensated').checked = state.compensated;
-      $('mode-label').textContent = state.manual ? 'COMMANDE MANUELLE' : 'TRAJECTOIRE CALCULÉE';
-      $('phase-counter').textContent = state.manual ? 'EXPLORATION DES MOBILITÉS' : 'Étape 0'+(p.index+1)+' / 05';
-      $('phase-name').textContent = state.manual ? 'Mode manuel' : state.time >= Model.duration ? 'Cycle terminé' : p.name;
-      $('phase-note').textContent = state.manual ? 'Les mouvements sont bornés par les courses et les contrôles de collision du modèle.' : phaseNotes[p.index];
-      $('timeline').value = state.time;
-      $('time-value').textContent = number(state.time)+' s';
-      [...$('phase-list').children].forEach((b,i) => {
-        b.classList.toggle('current', !state.manual && i === p.index);
-        b.classList.toggle('done', !state.manual && i < p.index);
-        b.setAttribute('aria-current', !state.manual && i === p.index ? 'step' : 'false');
-      });
-      $('btn-auto-play').textContent = isAutoCycle ? 'Ⅱ Pause' : state.manual || state.time >= Model.duration ? '▶ Nouveau cycle' : state.time === 0 ? '▶ Lancer le cycle' : '▶ Reprendre';
-    }
-    function commit() {
-      state.metrics = Model.inspect(state.joints, state.pose, state.compensated);
-      drawMechanism(); updateUI();
-    }
-    function atTime(time) {
-      const trajectory = Model.trajectory(time), ik = Model.inverse(trajectory.tcp, state.pose);
-      if (!ik.ok) return ik.reason;
-      const metrics = Model.inspect(ik.joints, state.pose, true);
-      if (metrics.collision) return metrics.collision;
-      state.time = time; state.joints = ik.joints; state.compensated = true;
-      return '';
-    }
-    function reset() {
-      isAutoCycle = false; state.manual = false; state.strokes = [100,100,100];
-      state.pose = Model.solvePlatform(state.strokes); state.compensated = true;
-      $('safety-message').textContent = '';
-      atTime(0); commit();
-    }
-    function seek(time) {
-      if (state.manual) reset();
-      isAutoCycle = false;
-      const error = atTime(time);
-      $('safety-message').textContent = error ? 'Mouvement arrêté : '+error : '';
-      commit();
-    }
-    function togglePlay() {
-      if (state.manual || state.time >= Model.duration) reset();
-      isAutoCycle = !isAutoCycle; $('safety-message').textContent = ''; updateUI();
-    }
-    function changeManual(kind, index, target) {
-      isAutoCycle = false; state.manual = true;
-      const origin = state[kind].slice(), distance = target - origin[index];
-      const count = Math.max(1, Math.ceil(Math.abs(distance) / 0.5));
-      let reason = '';
-      // Sweep the requested movement to avoid stepping through a collision.
-      for (let n = 1; n <= count; n++) {
-        const values = origin.slice(); values[index] += distance * n / count;
-        const pose = kind === 'strokes' ? Model.solvePlatform(values, state.pose) : state.pose;
-        if (!pose.ok) { reason = pose.reason; break; }
-        const joints = kind === 'joints' ? values : state.joints;
-        const metrics = Model.inspect(joints, pose, state.compensated);
-        if (metrics.collision) { reason = metrics.collision; break; }
-        state[kind] = values; state.pose = pose;
-      }
-      $('safety-message').textContent = reason ? 'Butée virtuelle : '+reason+'.' : '';
-      commit();
-    }
-    ['s','j'].forEach(prefix => {
-      for (let i = 0; i < 3; i++) $('slide-'+prefix+(i+1)).addEventListener('input', e =>
-        changeManual(prefix === 's' ? 'strokes' : 'joints', i, Number(e.target.value)));
-    });
-    $('btn-auto-play').addEventListener('click', togglePlay);
-    $('btn-reset').addEventListener('click', reset);
-    $('timeline').addEventListener('input', e => seek(Number(e.target.value)));
-    $('btn-level').addEventListener('click', () => {
-      isAutoCycle = false; state.manual = true;
-      const initial = state.strokes.slice(), average = initial.reduce((a,b) => a+b,0)/3;
-      let error = '';
-      for (let step = 1; step <= 200; step++) {
-        const strokes = initial.map(s => s + (average-s)*step/200);
-        const pose = Model.solvePlatform(strokes, state.pose);
-        if (!pose.ok) { error = pose.reason; break; }
-        const metrics = Model.inspect(state.joints, pose, state.compensated);
-        if (metrics.collision) { error = metrics.collision; break; }
-        state.strokes = strokes; state.pose = pose;
-      }
-      $('safety-message').textContent = error ? 'Mise à niveau arrêtée : '+error : '';
-      commit();
-    });
-    $('compensated').addEventListener('change', e => {
-      isAutoCycle = false; state.manual = true;
-      const candidate = Model.inspect(state.joints, state.pose, e.target.checked);
-      if (candidate.collision) $('safety-message').textContent = 'Changement refusé : '+candidate.collision+'.';
-      else { state.compensated = e.target.checked; $('safety-message').textContent = ''; }
-      commit();
-    });
-    document.querySelectorAll('[data-speed]').forEach(button => button.addEventListener('click', () => {
-      state.speed = Number(button.dataset.speed);
-      document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', b === button));
-    }));
-    $('btn-toggle-mode').addEventListener('click', () => {
-      isSchematicMode = !isSchematicMode;
-      solidMaterials.forEach(item => item.object.material = isSchematicMode ? item.ghost : item.solid);
-      skeleton.visible = isSchematicMode;
-      $('btn-toggle-mode').setAttribute('aria-pressed', isSchematicMode);
-    });
-    $('btn-labels').addEventListener('click', () => {
-      showLabels = !showLabels; $('btn-labels').setAttribute('aria-pressed', showLabels);
-    });
-    const views = { perspective: [8,5.4,10.5], front: [0,1.2,13], top: [0,13,0.01] };
-    document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
-      camera.position.fromArray(views[button.dataset.view]); controls.target.set(0,1.15,0);
-      controls.update();
-      document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b === button));
-    }));
-    const dialog = $('model-dialog');
-    document.querySelectorAll('[data-open-model]').forEach(button => button.addEventListener('click', () => {
-      isAutoCycle = false; updateUI(); dialog.showModal();
-    }));
-    $('close-model').addEventListener('click', () => dialog.close());
-    dialog.addEventListener('click', e => {
-      const r = dialog.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
-    });
-    document.addEventListener('keydown', e => {
-      if (e.code === 'Space' && !dialog.open && !/INPUT|BUTTON|SELECT|TEXTAREA/.test(e.target.tagName)) {
-        e.preventDefault(); togglePlay();
-      }
-    });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { isAutoCycle = false; updateUI(); }
-    });
-    new ResizeObserver(() => {
-      const width = container.clientWidth, height = container.clientHeight;
-      if (!width || !height) return;
-      camera.aspect = width/height;
-      // Reserve space for the HUD on narrow screens while keeping S9 in view.
-      camera.zoom = width <= 720 ? 0.64 : 1;
-      if (width <= 720) camera.setViewOffset(width, height, 0, 36, width, height);
-      else camera.clearViewOffset();
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    }).observe(container);
-    const clock = new THREE.Clock();
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = Math.min(clock.getDelta(), 0.05);
-      if (isAutoCycle) {
-        const nextTime = Math.min(Model.duration, state.time + delta * state.speed);
-        const error = atTime(nextTime);
-        if (error) { isAutoCycle = false; $('safety-message').textContent = 'Cycle arrêté : '+error; }
-        if (nextTime >= Model.duration) isAutoCycle = false;
-        commit();
-      }
-      controls.update(); renderer.render(scene, camera); updateLabels();
-    }
-    reset(); animate();
-    // Read-only snapshots for verification of model/scene agreement.
-    window.dockingDebug = {
-      snapshot: () => {
-        upperBoxGroup.getWorldPosition(workA);
-        upperBoxGroup.getWorldQuaternion(worldQ);
-        const sceneAxis = new THREE.Vector3(0,1,0).applyQuaternion(worldQ).toArray();
-        return { time: state.time, running: isAutoCycle, manual: state.manual,
-          strokes: [...state.strokes], joints: [...state.joints], pose: {...state.pose},
-          metrics: structuredClone(state.metrics), sceneTCP: workA.toArray(), sceneAxis };
-      }
-    };
-  </script>
 </body>
 </html>

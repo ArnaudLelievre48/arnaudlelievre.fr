@@ -1,156 +1,97 @@
-# Docking Lab
+# Animation — solution à trois vérins et bras articulé
 
-Ouvrir **sch_ma_cin_matique_3d_interactif.html** dans un navigateur avec WebGL.
-L’application fonctionne directement en `file://`, sans serveur ni connexion Internet.
-Conserver `docking.css`, `docking-model.js` et `vendor/` à côté du HTML.
+Ouvrir **`sch_ma_cin_matique_3d_interactif.html`** dans un navigateur compatible WebGL, puis cliquer sur **Lancer le cycle**. Tous les fichiers et la bibliothèque Three.js sont locaux : aucune connexion Internet ni compilation n’est nécessaire.
 
-Le bouton **Comprendre le système** ouvre les schémas fonctionnel et cinématique,
-avec les hypothèses introduites. **Schéma 3D** superpose les segments articulés
-à une représentation transparente du mécanisme.
+L’animation est construite à partir de `specification_liaisons_docking_solution_3verins_bras_articule.md`. Elle remplace l’ancienne cinématique de ce dossier.
 
-## Utilisation
+## Mécanisme représenté
 
-- **Lancer le cycle** : centrage, approche, insertion, maintien, retrait ; durée de référence 18 s.
-- **Pause / Reprendre**, curseur temporel et étapes cliquables : explorer la trajectoire.
-- Les six curseurs activent le mode manuel ; une nouvelle lecture réinitialise la pose de référence.
-- **Remettre à niveau** égalise les courses à leur moyenne, sous contrôle des interférences.
-- Désactiver **Maintenir l’orientation** pour observer un outil solidaire du dernier segment.
-- Glisser pour tourner, molette pour zoomer, clic droit pour déplacer ; espace pour lire ou suspendre.
+- `PLATFORM_1` : plateforme rigide de 5 m, longeron cylindrique orienté suivant Y et supports fixes.
+- Trois vérins télescopiques, corps et tiges distincts, montés sur des rotules. Les ancrages sont répartis en triangle non équilatéral ; le troisième vérin est placé à l’arrière.
+- `PLATFORM_2` : cadre rigide de 3 × 2,2 m, ouverture centrale de 1,4 × 1,4 m. Les extensions mesurent 1 m entre le col de la bouée et les extrémités suivant X.
+- Bouée indépendante avant capture, avec col Ø 1 m et `BOX_2` fixée au sommet.
+- Colonne du bras fixée au côté droit du cadre ; A1, A2 et A3 sont trois pivots parallèles à Y ; A4 est une rotation autour de l’axe local du poignet portant `BOX_1`.
+- Deux interfaces temporaires distinctes : capture latérale de la bouée et docking de `BOX_1` sur `BOX_2`.
 
-Le cycle s’arrête après le retrait. Les changements manuels sont échantillonnés
-jusqu’à la première interférence détectée. Les vues temporelles sélectionnent
-directement une pose de la trajectoire : ce sont des commandes d’exploration.
+Le modèle utilise **1 unité 3D = 1 m**. Le repère mécanique est X vers la droite, Y hors du plan du dessin, Z vertical. Three.js utilise `[X, Z, -Y]`, un changement de repère qui préserve son orientation.
 
-## Analyse du HTML initial
+## Cycle animé
 
-La chaîne identifiée est un bâti S0, trois vérins articulés, un anneau mobile S4,
-un bras à trois pivots S5–S7, une fiche S8 et une prise fixe S9.
-Chaque vérin comprend deux solides distincts, corps et tige, reliés par une
-glissière, et deux rotules d’extrémité : une branche SPS.
+Le cycle dure 34 secondes ; les durées sont choisies pour la démonstration.
 
-Le code initial imposait une hauteur et une inclinaison approximatives à partir
-des courses, puis affichait les vérins sans résoudre leur fermeture. Il animait
-les articulations par sinusoïdes et interpolations, sans cinématique inverse.
-Il orientait aussi la fiche indépendamment du bras sans nommer cette mobilité.
-Enfin, l’écart axial était tronqué à zéro et l’orientation n’intervenait pas dans
-le diagnostic de connexion.
+| Temps | Étape | Mouvement |
+|---|---|---|
+| 0–3 s | Approche | Bouée libre, bras dégagé |
+| 3–7 s | Descente du cadre | Allongement des trois vérins |
+| 7–10 s | Mise à niveau | Commande différentielle des courses |
+| 10–13 s | Capture grossière | Recentrage de la bouée et fermeture latérale |
+| 13–17 s | Approche du bras | Positionnement par A1–A3 |
+| 17–19 s | Orientation A4 | Rotation axiale du boîtier |
+| 19–21 s | Contact | Descente finale vers BOX_2 |
+| 21–24 s | Docking verrouillé | Capture et accouplement engagés |
+| 24–27 s | Retrait du bras | Déverrouillage puis dégagement |
+| 27–30 s | Libération | Ouverture de la capture |
+| 30–34 s | Remontée | Retour du cadre en position haute |
 
-## Hypothèses et modifications géométriques
+La capture reste engagée pendant le docking fin et le retrait du bras. Le cadre remonte après libération. Des interpolations à vitesse et accélération nulles aux extrémités rendent les étapes continues.
 
-Les trois distances AᵢBᵢ ne suffisent pas à imposer les six coordonnées de S4.
-Le modèle ajoute donc une contrainte de guidage idéale qui bloque les deux
-translations horizontales et le lacet. Ce guidage reste à concevoir ; le schéma
-le représente en pointillés et la scène ne lui invente pas une géométrie matérielle.
+## Commandes
 
-Le bras 3R commande la position de son extrémité. L’orientation indépendante de
-S8 est une fonction supplémentaire, matérialisée par trois anneaux au poignet
-et traitée comme un poignet idéal à trois rotations. Aucun asservissement,
-parallélogramme ou système passif réel n’est dimensionné ici.
+- Lecture/pause, réinitialisation, vitesse ×0,5 / ×1 / ×2.
+- Curseur temporel et onze boutons d’étapes : accès direct à toute la séquence.
+- Courses indépendantes des trois vérins et bouton de mise à niveau.
+- Réglages indépendants d’A1–A4 ; aucune tourelle ni compensation spatiale fictive.
+- Réglage de la capture latérale et bouton de libération.
+- Vues perspective, face et dessus ; schéma 3D et repères masquables.
+- Fenêtre « Comprendre le système » : graphe des liaisons, cotes et hypothèses.
+- Glisser pour orbiter, molette pour zoomer, clic droit pour déplacer, espace pour lecture/pause.
 
-Une échelle cohérente est retenue : **1 unité de scène = 100 mm**. Le HTML
-initial mélangeait ses unités et ses conversions ; cette échelle et les
-dimensions suivantes sont des choix de démonstration, pas des cotes certifiées.
+Un réglage active le mode manuel et déverrouille le docking fin. Les mouvements manuels sont parcourus par petits incréments et arrêtés avant les interférences détectées. La capture doit être libérée avant de modifier la pose du cadre. Le serrage manuel exige une bouée déjà centrée par le cycle. Relancer en mode manuel réinitialise la séquence.
 
-| Paramètre | Valeur retenue |
-| --- | --- |
-| Rayon extérieur / intérieur de l’anneau | 245 / 95 mm |
-| Rayon des ancrages hauts | 290 mm |
-| Altitude des ancrages hauts | 375 mm |
-| Courses des vérins | 0 à 200 mm |
-| Longueur rotule à rotule à course nulle | ≈ 233,054 mm |
-| Position neutre | courses 100 mm ; altitude S4 45 mm |
-| Segments du bras | 160 et 215 mm ; géométrie initiale 1,35 et 1,25 unités |
-| Déport de la face de fiche sous le poignet | 75 mm |
-| Altitude du plan de connexion | −131 mm |
-| Engagement utile des broches | 5 mm |
+## Hypothèses explicites
 
-L’allongement des segments et le montage de la fiche sous le poignet permettent
-d’atteindre S9 tout en faisant passer le bras par l’ouverture de l’anneau.
-La trajectoire garde S4 à niveau. L’influence de ses courses différentielles
-peut être explorée séparément en mode manuel.
+Le croquis ne définit pas toutes les dimensions et contraintes. Les choix suivants sont signalés dans l’interface :
 
-## Modèle géométrique
+- Guidage idéal limitant `PLATFORM_2` à la hauteur et deux inclinaisons. Les translations X/Y et le lacet sont négligés. Les trois branches à rotules seules ne suffisent pas à imposer une pose spatiale complète ; aucune pièce de guidage réelle n’est inventée.
+- Rotules aux extrémités des vérins et disposition triangulaire illustrative.
+- Largeur de la plateforme, diamètre/longueur du longeron, profondeur et forme du cadre, corps inférieur de la bouée : géométries de maquette.
+- Courses illustratives de 0 à 1 100 mm, calculées à partir de trois longueurs minimales distinctes. Ce ne sont pas des caractéristiques de vérins sélectionnés.
+- Mâchoires coulissantes suivant X : interprétation plausible des flèches de capture, non prouvée par le dessin. Le recentrage de la bouée est prescrit et n’est pas issu d’un calcul de contacts.
+- Bras : longueurs 1,30 m et 0,95 m ; déport terminal total de 0,50 m. Les limites articulaires sont illustratives.
+- Seuils de contact choisis pour la démonstration : 8 mm transversal, ± 2 mm axial et 1° en inclinaison et azimut. La jauge indique les 20 derniers millimètres d’approche, sans supposer de broches ou de mécanisme interne.
+- Verrouillage symbolique temporaire, autorisé après capture et contact aligné. Les degrés de liberté réellement bloqués restent à préciser.
 
-Le repère mécanique utilise Z vertical. Three.js utilise y vertical ; la
-correspondance est `(X, Y, Z) = (x, −z, y)`. Les angles internes `pitch` et `roll`
-décrivent `R = Rx(pitch) Rz(roll)` dans le repère Three.js. Les angles affichés
-sont θX = pitch et θY = −roll.
+Le bras est réellement plan : sur un cadre incliné, il ne peut pas annuler arbitrairement une erreur spatiale. Le cycle remet donc le cadre à niveau et centre la bouée avant d’utiliser A1–A4 pour le docking.
 
-Pour chaque vérin, avec les longueurs exprimées en unités de scène :
+## Vérification et limites
 
-```text
-ℓᵢ = ℓ₀ + courseᵢ / 100
-‖(0, h, 0) + R Bᵢ − Aᵢ‖ = ℓᵢ
-```
+`docking-model.js` est indépendant du rendu : fermeture numérique des trois longueurs, cinématique directe/inverse du bras et états de capture/contact/verrouillage. `docking-scene.js` applique ces transformations aux groupes de pièces.
 
-Les trois équations sont résolues par Newton amorti en `(h, pitch, roll)`,
-avec une tolérance interne de 10⁻⁸ unité. La branche proche de la configuration
-suspendue est suivie ; ce calcul ne constitue pas une analyse globale des
-singularités ou de toutes les branches d’assemblage.
+Les contrôles d’interférence utilisent des enveloppes et un échantillonnage géométriques : cadre/col, bras/cadre, bras/bouée, bras/vérins, bras/plateforme, bras/longeron, boîtier/cadre, boîtier/bouée et contact désaligné. Ils ne constituent pas une détection exhaustive de toutes les collisions. La simulation ne calcule ni efforts, ni frottements, ni stabilité, ni dynamique de houle ; elle ne valide pas un dimensionnement industriel.
 
-La cible du poignet est la cible de la face de connexion décalée de 75 mm vers
-le haut. Elle est ramenée dans le repère de S4. J1 oriente le plan du bras vers
-cette cible ; J2 et J3 proviennent de la résolution analytique du bras plan 2R
-sur une branche de coude choisie pour dégager l’anneau. Les trajectoires utilisent
-`s(u) = 10u³ − 15u⁴ + 6u⁵`, à vitesse et accélération nulles aux extrémités.
-
-La connexion exige simultanément :
-
-```text
-écart radial ≤ 1,5 mm
-|écart axial signé| ≤ 0,5 mm
-inclinaison de la fiche ≤ 1°
-écart de l’axe de détrompage ≤ 1°
-aucune interférence détectée
-```
-
-L’orientation est mesurée sur les axes réels de l’outil. Le pourcentage
-d’insertion représente uniquement les 5 mm utiles des broches et reste nul
-si les interfaces sont désalignées.
-
-## Portée des contrôles
-
-Les segments du bras sont comparés à la tranche annulaire avec une épaisseur
-de sécurité. Le boîtier utilise une enveloppe conservatrice de rayon égal à
-sa demi-diagonale ; elle peut arrêter un mouvement avant le contact exact.
-Le passage sur S9 vérifie le centrage, l’orientation et la butée axiale.
-
-Ce modèle ne calcule ni efforts, ni frottement, ni souplesse, ni stabilité de
-la suspension. Il ne vérifie pas toutes les collisions possibles avec le bâti,
-le sol, les vérins, les câbles ou entre les différentes pièces du bras. Le
-poignet idéal n’a pas de butées. « Connecté » indique seulement que les critères
-géométriques de démonstration sont satisfaits, sans simulation électrique.
-Les schémas ne revendiquent pas de conformité à une norme de représentation.
-
-## Vérification
+Tests du modèle, avec Node.js :
 
 ```sh
-node tests/model.test.cjs
+node --test --test-isolation=none tests/model.test.cjs
 ```
 
-Les tests couvrent les 125 combinaisons de courses 0/50/100/150/200 mm,
-la concordance directe/inverse sur plateforme inclinée, 3 601 poses du cycle,
-les refus d’accostage désaligné ou trop profond, la collision avec l’anneau
-et le calcul d’insertion.
+L’option d’isolation convient à l’environnement de travail restreint. Selon la version de Node.js, on peut également lancer `node tests/model.test.cjs`.
 
-Une vérification navigateur a également contrôlé l’ouverture locale, la
-concordance entre la géométrie Three.js et les calculs, les commandes, les
-schémas, la pause/reprise et la mise en page mobile. Elle est reproductible
-avec Python et Playwright déjà installés :
+Vérification dans Chromium, avec Python et Playwright déjà installés :
 
 ```sh
-python tests/browser_smoke.py
-# Ou avec un exécutable Chromium existant :
-python tests/browser_smoke.py /chemin/vers/chromium
+python3 tests/browser_smoke.py
 ```
 
-Les captures de vérification sont produites dans `/tmp/docking-*.png`.
+Le test compare les positions et orientations réelles de la scène aux calculs du modèle, parcourt les étapes, vérifie les commandes, le verrouillage de capture, la lecture/pause, les vues et l’absence de débordement sur mobile. Les captures de vérification sont enregistrées dans `/tmp/docking-3verins-*.png`.
 
-## Fichiers
+Fichiers à conserver ensemble :
 
-- `sch_ma_cin_matique_3d_interactif.html` : interface, géométrie 3D, interactions.
-- `docking-model.js` : cinématique, trajectoire et critères géométriques, sans dépendance DOM.
-- `docking.css` : styles et adaptation mobile.
-- `tests/model.test.cjs` : tests numériques exécutables avec Node.js.
-- `tests/browser_smoke.py` : vérification de l’interface avec Playwright.
-- `vendor/` : Three.js r128, OrbitControls correspondant et licence MIT.
+```text
+sch_ma_cin_matique_3d_interactif.html
+docking-model.js
+docking-scene.js
+docking.css
+vendor/three.min.js
+vendor/OrbitControls.js
+```

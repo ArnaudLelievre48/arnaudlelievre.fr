@@ -13,8 +13,8 @@
   scene.background = new THREE.Color(0x0a121c);
   scene.fog = new THREE.FogExp2(0x0a121c, 0.013);
   const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 100);
-  const target = new THREE.Vector3(0.8, 2.05, 0);
-  const views = { perspective: [10.8, 8.3, 14.5], front: [0.8, 2.05, 18.5], top: [0.8, 20, 0.001] };
+  const target = new THREE.Vector3(0.7, 4.0, 0);
+  const views = { perspective: [13.5, 10.8, 20], front: [0.7, 4.0, 26], top: [0.7, 28, 0.001] };
   camera.position.fromArray(views.perspective);
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
@@ -27,7 +27,7 @@
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
-  renderer.domElement.setAttribute('aria-label', 'Plateforme, bras A1–A5, tripode spatial, pince et bouée');
+  renderer.domElement.setAttribute('aria-label', 'Plateforme, longeron, bras A1–A5, porte-pince encastré et pince amortie autour de G4');
   container.appendChild(renderer.domElement);
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.copy(target); controls.enableDamping = true; controls.dampingFactor = 0.07;
@@ -43,7 +43,7 @@
   const mat = (color, metalness = 0.45) => new THREE.MeshStandardMaterial({ color, metalness, roughness: 0.36 });
   const materials = {
     structure: mat(0x8195a7, 0.75), dark: mat(0x253d51), arm: mat(0xf4bc69, 0.55),
-    joint: mat(0x253444, 0.8), tripod: mat(0x6be4d3, 0.6), buoy: mat(0xe96c80, 0.25),
+    joint: mat(0x253444, 0.8), support: mat(0x6be4d3, 0.6), buoy: mat(0xe96c80, 0.25),
     collar: mat(0xffc3aa, 0.45), upper: mat(0xe7eff2), lower: mat(0x315766), chrome: mat(0xb5d5dd, 0.9)
   };
   function mesh(geometry, material, parent = scene, position) {
@@ -79,17 +79,18 @@
   }
   // Rigid composite platform: real Y width, cylinder axis Y and triangulated struts.
   const platform = new THREE.Group(); platform.name = 'PLATFORM_ASSEMBLY'; scene.add(platform);
-  box([5.6, C.platformWidth, C.platformThickness], [-1, 0, C.platformZ], materials.structure, platform);
-  [-1.14, 1.14].forEach(y => box([5.6, 0.07, 0.1], [-1, y, 3.32], materials.chrome, platform));
-  const longeron = mesh(new THREE.CylinderGeometry(0.87, 0.87, 3.25, 48), materials.dark, platform, [-2.6, 0, 1.4]);
+  const platformCenter = (C.platformMinX + C.platformMaxX) / 2, platformLength = C.platformMaxX - C.platformMinX;
+  box([platformLength, C.platformWidth, C.platformThickness], [platformCenter, 0, C.platformZ], materials.structure, platform);
+  [-1.14, 1.14].forEach(y => box([platformLength, 0.07, 0.1], [platformCenter, y, C.platformZ + 0.17], materials.chrome, platform));
+  const longeron = mesh(new THREE.CylinderGeometry(C.longeronRadius, C.longeronRadius, C.longeronLength, 64), materials.dark, platform, C.longeronCenter);
   longeron.name = 'LONGERON'; longeron.rotation.x = Math.PI / 2;
   for (const y of [-1.12, 1.12]) {
-    segment([-3.15, y, 3.04], [-3.16, y, 2.06], 0.065, materials.structure, platform);
-    segment([-2.0, y, 3.04], [-2.1, y, 2.08], 0.065, materials.structure, platform);
-    segment([-3.3, y, 3.04], [-2.1, y, 2.08], 0.045, materials.chrome, platform);
+    segment([-3.5, y, 5.89], [-3.15, y, 5.20], 0.065, materials.structure, platform);
+    segment([0.2, y, 5.89], [-0.36, y, 5.20], 0.065, materials.structure, platform);
+    segment([-3.65, y, 5.89], [-2.25, y, 5.70], 0.045, materials.chrome, platform);
   }
-  box([0.5, 0.52, 0.12], [C.base[0], 0, 3.32], materials.dark, platform);
-  segment([C.base[0], 0, 3.38], C.base, 0.14, materials.arm);
+  box([0.5, 0.52, 0.12], [C.base[0], 0, C.platformZ + 0.17], materials.dark, platform);
+  segment([C.base[0], 0, C.platformZ + 0.23], C.base, 0.14, materials.arm);
   // Four Y pivots. Each link's local longitudinal direction is +x.
   const arm = new THREE.Group(); arm.name = 'ARTICULATED_ARM'; arm.position.copy(vector(C.base)); scene.add(arm);
   const pivots = [], pivotSchematic = [], linkSchematic = [];
@@ -104,9 +105,9 @@
     pivotSchematic.push(jointNode([0, 0, 0]));
   });
   const rotator = new THREE.Group(); rotator.name = 'A5'; parent.add(rotator);
-  const axial = mesh(new THREE.CylinderGeometry(0.135, 0.135, 0.12, 24), materials.tripod, rotator);
+  const axial = mesh(new THREE.CylinderGeometry(0.135, 0.135, 0.12, 24), materials.support, rotator);
   axial.rotation.z = Math.PI / 2;
-  const a5Ring = mesh(new THREE.TorusGeometry(0.17, 0.018, 8, 40), materials.tripod, parent);
+  const a5Ring = mesh(new THREE.TorusGeometry(0.17, 0.018, 8, 40), materials.support, parent);
   a5Ring.rotation.y = Math.PI / 2;
   // BOX_1 shares the A5 transform. No world-orientation overrides.
   const tool = new THREE.Group(); tool.name = 'BOX_1'; rotator.add(tool);
@@ -116,26 +117,45 @@
   upperFace.position.x = -0.006;
   const upperKey = mesh(new THREE.BoxGeometry(0.02, 0.09, 0.11), materials.arm, tool); upperKey.position.set(-0.017, C.boxWidth / 2 - 0.065, 0);
   const toolNode = jointNode([0, 0, 0]), a5Node = jointNode([0, 0, 0]);
-  // Spatial tripod with exactly three fixed-length bars and all six end joints.
-  const tripod = new THREE.Group(); tripod.name = 'TRIPOD_GRIPPER_ASSEMBLY'; scene.add(tripod);
-  M.anchors.forEach((a, i) => {
-    segment(a.top, a.bottom, 0.075, materials.tripod);
-    const top = mesh(new THREE.SphereGeometry(0.14, 20, 16), materials.chrome, tripod, a.top);
-    const bottom = mesh(new THREE.SphereGeometry(0.13, 20, 16), materials.chrome, tripod, a.bottom);
-    top.name = 'T_UP_' + (i + 1); bottom.name = 'T_LOW_' + (i + 1);
-    jointNode(a.top); jointNode(a.bottom);
-  });
-  mesh(new THREE.CylinderGeometry(0.54, 0.54, 0.13, 40), materials.dark, tripod, C.tripodCenter);
-  // Central member explicitly distinct from rear branch, rigid in variant T3-B.
-  segment([0.35, 0, 3.04], [0.35, 0, 0.54], 0.085, materials.structure);
-  // A single rigid carrier ends at the common vertical hinge, on the platform side.
-  const jawPivot = M.jawPose(0, 0).pivot;
-  segment([0.35, 0, 0.54], [0.75, 0, 0.46], 0.08, materials.tripod);
-  segment([0.75, 0, 0.46], jawPivot, 0.085, materials.tripod);
-  const hingePin = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.43, 24), materials.chrome, scene, jawPivot);
-  hingePin.name = 'GRIPPER_PIVOT_Z';
-  for (const dz of [-0.21, 0.21]) box([0.25, 0.28, 0.04], [jawPivot[0], 0, C.jawZ + dz], materials.joint);
-  jointNode(jawPivot);
+  // Both fixed attachments belong to LONGERON, including the encastré carrier.
+  // A child frame cancels the cylinder's mesh-axis rotation, retaining mechanical axes.
+  const longeronFrame = new THREE.Group(); longeronFrame.name = 'LONGERON_ATTACHMENTS';
+  longeronFrame.rotation.x = -Math.PI / 2; longeron.add(longeronFrame);
+  const localToLongeron = p => p.map((v, i) => v - C.longeronCenter[i]);
+  segment(localToLongeron(C.longeronMount), localToLongeron(C.carrierMount), 0.12, materials.support, longeronFrame);
+  box([0.3, 0.5, 0.28], localToLongeron(C.longeronMount), materials.structure, longeronFrame);
+  const fixedMount = box([0.28, 0.4, 0.26], localToLongeron(C.carrierMount), materials.structure, longeronFrame);
+  const d1Ball = mesh(new THREE.SphereGeometry(0.12, 24, 16), materials.chrome, longeronFrame, localToLongeron(C.damperD1));
+  d1Ball.name = 'D1';
+  const carrierGroup = new THREE.Group(); carrierGroup.name = 'GRIPPER_CARRIER_FIXED'; carrierGroup.position.copy(vector(localToLongeron(C.carrierMount))); longeronFrame.add(carrierGroup);
+  segment([0, 0, 0], [0, 0, -C.carrierLength], 0.09, materials.support, carrierGroup);
+  const gripperGroup = new THREE.Group(); gripperGroup.name = 'GRIPPER';
+  gripperGroup.position.y = -C.carrierLength; carrierGroup.add(gripperGroup);
+  segment([0, 0, 0], C.damperLever, 0.075, materials.support, gripperGroup);
+  const d2Ball = mesh(new THREE.SphereGeometry(0.12, 24, 16), materials.chrome, gripperGroup, C.damperLever); d2Ball.name = 'D2';
+  const g4Pin = mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.4, 24), materials.joint, gripperGroup); g4Pin.rotation.x = Math.PI / 2;
+  segment([0, 0, 0], [C.hingeOffset, 0, 0], 0.085, materials.support, gripperGroup, false);
+  const jawPivot = [C.hingeOffset, 0, 0];
+  const hingePin = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.43, 24), materials.chrome, gripperGroup, jawPivot);
+  hingePin.name = 'JAW_HINGE';
+  for (const dz of [-0.21, 0.21]) box([0.25, 0.28, 0.04], [C.hingeOffset, 0, dz], materials.joint, gripperGroup);
+  // Distinct vertical piece seen on the sketch: no assigned actuator/lock function.
+  const localElement = new THREE.Group(); localElement.name = 'GRIPPER_LOCAL_VERTICAL_ELEMENT'; gripperGroup.add(localElement);
+  localElement.position.copy(vector([0.82, 0.95, 0]));
+  mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 16), materials.chrome, localElement);
+  mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.06, 16), materials.structure, localElement, [0, 0, 0.24]);
+  // Small bracket stays outside the buoy and holds the observed local piece.
+  segment([0, 0, -0.14], [0.12, 0.95, -0.14], 0.045, materials.support, gripperGroup, false);
+  segment([0.12, 0.95, -0.14], [0.82, 0.95, -0.14], 0.045, materials.support, gripperGroup, false);
+  const damperGroup = new THREE.Group(); damperGroup.name = 'DAMPER'; scene.add(damperGroup);
+  mesh(new THREE.CylinderGeometry(0.11, 0.11, C.damperBodyLength, 24), materials.dark, damperGroup).position.y = C.damperBodyLength / 2;
+  mesh(new THREE.CylinderGeometry(0.135, 0.135, 0.08, 24), materials.structure, damperGroup).position.y = C.damperBodyLength - 0.04;
+  const damperRod = mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 16), materials.chrome, damperGroup);
+  const carrierSkeleton = skeletonSegment([0, 0, 0], [0, 0, -C.carrierLength], 0x6be4d3);
+  const leverSkeleton = skeletonSegment([0, 0, 0], C.damperLever, 0x6be4d3);
+  const damperSkeleton = skeletonSegment(C.damperD1, M.supportForward().d2, 0x96c4ee);
+  jointNode(C.damperD1);
+  const g4Node = jointNode([0, 0, 0]), d2Node = jointNode([0, 0, 0]);
   function halfRing(start, end) {
     const shape = new THREE.Shape();
     shape.moveTo(C.jawOuter * Math.cos(start), C.jawOuter * Math.sin(start));
@@ -147,14 +167,14 @@
     geo.translate(C.jawPivotRadius, -C.jawThickness / 2, 0); return geo;
   }
   const jaws = [0, Math.PI].map((a, i) => {
-    const g = new THREE.Group(); g.name = 'GRIPPER_JAW_' + (i + 1); scene.add(g);
-    mesh(halfRing(a, a + Math.PI), materials.tripod, g);
+    const g = new THREE.Group(); g.name = 'GRIPPER_JAW_' + (i + 1); g.position.x = C.hingeOffset; gripperGroup.add(g);
+    mesh(halfRing(a, a + Math.PI), materials.support, g);
     // Stacked hinge eyes share the same pin; each rigid jaw keeps its curved arm.
     const eyeHeight = (i === 0 ? 1 : -1) * 0.11;
-    const eye = mesh(new THREE.TorusGeometry(0.105, 0.035, 12, 32), materials.tripod, g, [0, 0, eyeHeight]);
+    const eye = mesh(new THREE.TorusGeometry(0.105, 0.035, 12, 32), materials.support, g, [0, 0, eyeHeight]);
     eye.rotation.x = Math.PI / 2;
     const attachAngle = Math.PI + (i === 0 ? -0.16 : 0.16), r = (C.jawInner + C.jawOuter) / 2;
-    segment([0.075, 0, eyeHeight], [C.jawPivotRadius + r * Math.cos(attachAngle), r * Math.sin(attachAngle), 0], 0.055, materials.tripod, g, false);
+    segment([0.075, 0, eyeHeight], [C.jawPivotRadius + r * Math.cos(attachAngle), r * Math.sin(attachAngle), 0], 0.055, materials.support, g, false);
     return g;
   });
   const jawOutlines = [0, Math.PI].map(a => {
@@ -167,9 +187,10 @@
   const buoyGroup = new THREE.Group(); buoyGroup.name = 'BUOY_ASSEMBLY'; scene.add(buoyGroup);
   const profile = M.buoyProfile.map(([z, r]) => new THREE.Vector2(r, z));
   mesh(new THREE.LatheGeometry(profile, 64), materials.buoy, buoyGroup);
-  mesh(new THREE.CylinderGeometry(C.collarRadius, C.collarRadius, C.collarThickness, 64), materials.collar, buoyGroup, [0, 0, C.collarZ]);
-  const collarRim = mesh(new THREE.TorusGeometry(C.collarRadius, 0.025, 10, 64), materials.chrome, buoyGroup, [0, 0, C.collarZ]);
-  collarRim.rotation.x = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.035, 48), materials.buoy, buoyGroup, [0, 0, C.neckTop - 0.0175]);
+  mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.035, 48), materials.buoy, buoyGroup, [0, 0, -1.65 + 0.0175]);
+  // Highlight the capture region on the flared rigid buoy; no invented flange.
+  mesh(new THREE.CylinderGeometry(C.collarRadius + 0.009, C.collarRadius + 0.009, 0.1, 64, 1, true), materials.collar, buoyGroup, [0, 0, C.collarZ]);
   const receiverGroup = new THREE.Group(); receiverGroup.name = 'BOX_2'; receiverGroup.position.y = C.socketZ; buoyGroup.add(receiverGroup);
   box([C.boxWidth, C.boxDepth, C.boxHeight], [0, 0, -C.boxHeight / 2], materials.dark, receiverGroup);
   const receiverFaceMaterial = mat(0x427780);
@@ -192,7 +213,7 @@
   });
   const errorLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: 0xf4bc69 })); scene.add(errorLine);
   let running = false, schematic = false, labelsVisible = true;
-  const state = { time: 0, speed: 1, manual: false, joints: [], buoy: M.neutralBuoy(), opening: 1, capture: 'OPEN', dock: 'OPEN', metrics: null };
+  const state = { time: 0, speed: 1, manual: false, joints: [], buoy: M.neutralBuoy(), opening: 1, capture: 'OPEN', dock: 'OPEN', supportAngles: [0], metrics: null };
   const number = (v, digits = 2) => (Math.abs(v) < 1e-9 ? 0 : v).toLocaleString('fr-FR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
   const labels = [];
   function label(text, object, position, kind = '') {
@@ -202,14 +223,15 @@
   label('BOX_1', tool, [0, 0.36, 0], 'tool'); label('BOX_2', receiverGroup, [0, 0.19, 0.42], 'tool');
   pivots.forEach((p, i) => label('A' + (i + 1) + ' · PIVOT Y', p, [0, 0.27, 0]));
   label('A5 · ROTATION LOCALE', rotator, [0, 0.28, 0]);
-  label('PLATEFORME', platform, [-2.7, 3.45, -0.7]); label('LONGERON · AXE Y', longeron, [0, -0.6, 0]);
-  label('BOUÉE', buoyGroup, [0.4, -0.3, 0.5]); label('COLLERETTE', buoyGroup, [0.5, C.collarZ + 0.15, 0.75]);
+  label('PLATEFORME ≈ 5 m', platform, [-2.7, C.platformZ + 0.3, -0.7]); label('LONGERON · AXE Y', longeron, [0, -0.6, 0]);
+  label('BOUÉE', buoyGroup, [0.4, -0.3, 0.5]); label('ZONE DE CAPTURE', buoyGroup, [0.5, C.collarZ + 0.15, 0.75]);
   label('PINCE PÉRIPHÉRIQUE', jaws[1], [C.jawPivotRadius, 0.12, 0.8], 'tool');
-  label('PIVOT PINCE · Z', hingePin, [0, 0.32, 0], 'tool'); label('MÂT CENTRAL · FIXE', null, vector([0.35, 0, 2.4]).toArray());
-  M.anchors.forEach((a, i) => {
-    label('T_UP_' + (i + 1), null, vector(a.top).add(new THREE.Vector3(0, 0.15, 0)).toArray());
-    label('T_LOW_' + (i + 1), null, vector(a.bottom).add(new THREE.Vector3(0, -0.18, 0)).toArray());
-  });
+  label('CHARNIÈRE · AXE LOCAL', hingePin, [0, 0.32, 0], 'tool');
+  label('PORTE-PINCE · ENCASTRÉ', fixedMount, [0, 0.27, 0], 'tool');
+  label('G4 · PIVOT Y', g4Pin, [0, 0.22, 0], 'tool');
+  label('D1 · SUR LONGERON', d1Ball, [0, 0.2, 0]); label('D2 · ROTULE MOBILE', d2Ball, [0.1, -0.2, 0]);
+  label('AMORTISSEUR', damperGroup, [0.15, 0.45, 0]);
+  label('ÉLÉMENT VERTICAL · FONCTION ?', localElement, [0, 0.35, 0]);
   label('EAU · Z = 0', null, [-3.4, 0.04, 2.2]);
   label('X', null, vector([-3.15, 1.8, -1.9]).toArray());
   label('Y', null, vector([-3.9, 2.55, -1.9]).toArray());
@@ -233,13 +255,27 @@
     pivots.forEach((p, i) => p.rotation.z = state.joints[i] * rad);
     rotator.rotation.x = -state.joints[4] * rad;
     buoyGroup.position.set(state.buoy.x, state.buoy.lift, -state.buoy.y);
-    buoyGroup.rotation.y = state.buoy.heading * rad;
+    buoyGroup.rotation.set(0, state.buoy.heading * rad, (state.buoy.tilt || 0) * rad, 'ZYX');
+    gripperGroup.rotation.z = state.supportAngles[0] * rad;
     jaws.forEach((g, i) => {
-      const pose = M.jawPose(i, state.opening);
-      g.position.copy(vector(pose.pivot)); g.rotation.y = pose.angle * rad;
-      jawOutlines[i].position.copy(g.position); jawOutlines[i].rotation.copy(g.rotation);
+      const pose = M.jawPose(i, state.opening, state.supportAngles);
+      g.rotation.y = pose.angle * rad;
     });
+    const support = state.metrics.support;
+    damperGroup.position.copy(vector(support.d1));
+    damperGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(support.d2).sub(vector(support.d1)).normalize());
+    const rodLength = support.length - C.damperBodyLength + 0.06;
+    damperRod.scale.y = rodLength; damperRod.position.y = C.damperBodyLength - 0.06 + rodLength / 2;
+    carrierSkeleton.position.copy(vector(support.mount)).add(vector(support.g4)).multiplyScalar(0.5);
+    carrierSkeleton.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(support.g4).sub(vector(support.mount)).normalize());
+    leverSkeleton.position.copy(vector(support.g4)).add(vector(support.d2)).multiplyScalar(0.5);
+    leverSkeleton.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(support.d2).sub(vector(support.g4)).normalize());
+    damperSkeleton.position.copy(vector(support.d1)).add(vector(support.d2)).multiplyScalar(0.5);
+    damperSkeleton.scale.y = support.length / support.neutralLength;
+    damperSkeleton.quaternion.copy(damperGroup.quaternion);
+    g4Node.position.copy(vector(support.g4)); d2Node.position.copy(vector(support.d2));
     scene.updateMatrixWorld(true);
+    jaws.forEach((g, i) => { g.getWorldPosition(jawOutlines[i].position); g.getWorldQuaternion(jawOutlines[i].quaternion); });
     state.metrics.points.slice(0, 4).forEach((a, i) => {
       const av = vector(a), bv = vector(state.metrics.points[i + 1]);
       linkSchematic[i].position.copy(av).add(bv).multiplyScalar(0.5);
@@ -247,7 +283,7 @@
       pivotSchematic[i].position.copy(vector(a));
     });
     toolNode.position.copy(vector(state.metrics.tcp)); rotator.getWorldPosition(a5Node.position);
-    buoyAxis.position.copy(buoyGroup.position); buoyAxis.position.y += (C.socketZ - 1.65) / 2;
+    buoyAxis.position.copy(buoyGroup.localToWorld(new THREE.Vector3(0, (C.socketZ - 1.65) / 2, 0))); buoyAxis.quaternion.copy(buoyGroup.quaternion);
     const positions = errorLine.geometry.attributes.position;
     const a = vector(state.metrics.tcp), b = vector(state.metrics.target);
     positions.setXYZ(0, a.x, a.y, a.z); positions.setXYZ(1, b.x, b.y, b.z); positions.needsUpdate = true; errorLine.geometry.computeBoundingSphere();
@@ -259,12 +295,14 @@
   }
   buildControls('joint-controls', ['A1 · épaule', 'A2 · articulation haute', 'A3 · retour du bras', 'A4 · orientation terminale', 'A5 · rotation axiale'].map((name, i) => ({ name, min: C.jointLimits[i][0], max: C.jointLimits[i][1], step: 0.1, unit: '°' })), 'j');
   const buoyItems = [
-    { name: 'Position X', key: 'x', min: 2.9, max: 5.8, step: 0.01, unit: 'u' },
-    { name: 'Position Y', key: 'y', min: -0.5, max: 0.5, step: 0.01, unit: 'u' },
-    { name: 'Déplacement Z', key: 'lift', min: -0.3, max: 0.3, step: 0.01, unit: 'u' },
-    { name: 'Rotation autour de Z', key: 'heading', min: -180, max: 180, step: 0.1, unit: '°' }
+    { name: 'Position X', key: 'x', min: 2.7, max: 6.4, step: 0.01, unit: 'm' },
+    { name: 'Position Y', key: 'y', min: -0.5, max: 0.5, step: 0.01, unit: 'm' },
+    { name: 'Déplacement Z', key: 'lift', min: -0.3, max: 0.3, step: 0.01, unit: 'm' },
+    { name: 'Rotation autour de l’axe local', key: 'heading', min: -180, max: 180, step: 0.1, unit: '°' },
+    { name: 'Inclinaison dans XZ', key: 'tilt', min: -15, max: 15, step: 0.1, unit: '°' }
   ];
   buildControls('buoy-controls', buoyItems, 'b');
+  buildControls('support-controls', [{ name: 'G4 · inclinaison de la pince', min: C.supportLimits[0][0], max: C.supportLimits[0][1], step: 0.1, unit: '°' }], 'g');
   let start = 0;
   M.phases.forEach((p, i) => {
     const button = document.createElement('button'), time = start; button.title = p.name;
@@ -280,9 +318,12 @@
     $('dock-badge').dataset.tone = m.collision ? 'danger' : m.aligned ? '' : 'warn';
     $('capture-state').textContent = state.capture; $('dock-state').textContent = state.dock;
     $('capture-state').dataset.engaged = state.capture === 'ENGAGED'; $('dock-state').dataset.engaged = state.dock === 'LOCKED';
-    $('constraint-note').textContent = state.dock === 'LOCKED' ? 'Les deux liaisons sont engagées. Déverrouiller les boîtes avant tout mouvement.' : state.capture === 'ENGAGED' ? 'Bouée retenue en translation ; sa rotation Z reste libre.' : 'Bouée indépendante de la plateforme.';
+    $('constraint-note').textContent = state.dock === 'LOCKED' ? 'Les deux liaisons sont engagées. Déverrouiller les boîtes avant tout mouvement.' : state.capture === 'ENGAGED' ? 'Porte-pince encastré au longeron ; la bouée suit la pince autour de G4, sa rotation locale reste libre.' : 'Bouée indépendante de la plateforme.';
     state.joints.forEach((v, i) => { $('slide-j' + (i + 1)).value = v; $('txt-j' + (i + 1)).textContent = number(v, 1) + '°'; $('slide-j' + (i + 1)).disabled = state.dock === 'LOCKED'; });
     buoyItems.forEach((item, i) => { $('slide-b' + (i + 1)).value = state.buoy[item.key]; $('txt-b' + (i + 1)).textContent = number(state.buoy[item.key], item.unit === '°' ? 1 : 2) + ' ' + item.unit; $('slide-b' + (i + 1)).disabled = state.dock === 'LOCKED' || (state.capture === 'ENGAGED' && item.key !== 'heading'); });
+    state.supportAngles.forEach((v, i) => { $('slide-g' + (i + 1)).value = v; $('txt-g' + (i + 1)).textContent = number(v, 1) + '°'; $('slide-g' + (i + 1)).disabled = state.dock === 'LOCKED'; });
+    $('damper-length').textContent = number(m.support.length, 3) + ' m'; $('damper-extension').textContent = number(m.support.extension, 3) + ' m';
+    $('gripper-tilt').textContent = number(m.support.tilt, 1) + '°';
     $('slide-opening').value = state.opening; $('txt-opening').textContent = number(state.opening * C.jawMaxAngle, 1) + '° / demi-pince'; $('slide-opening').disabled = state.capture === 'ENGAGED';
     $('btn-position').disabled = state.capture === 'ENGAGED'; $('btn-capture').disabled = state.capture === 'ENGAGED' || !m.canCapture;
     $('btn-align').disabled = state.dock === 'LOCKED'; $('btn-dock').disabled = state.dock !== 'LOCKED' && !m.canDock;
@@ -297,16 +338,16 @@
     [...$('phase-list').children].forEach((b, i) => { b.classList.toggle('current', !state.manual && i === p.index); b.classList.toggle('done', !state.manual && i < p.index); b.setAttribute('aria-current', !state.manual && i === p.index ? 'step' : 'false'); });
     $('btn-auto-play').textContent = running ? 'Ⅱ Pause' : state.manual || state.time >= M.duration ? '▶ Nouveau cycle' : state.time === 0 ? '▶ Lancer le cycle' : '▶ Reprendre';
   }
-  function commit() { state.metrics = M.inspect(state.joints, state.buoy, state.opening, state.capture, state.dock); draw(); updateUI(); }
+  function commit() { state.metrics = M.inspect(state.joints, state.buoy, state.opening, state.capture, state.dock, state.supportAngles); draw(); updateUI(); }
   function validate(candidate) {
-    const m = M.inspect(candidate.joints, candidate.buoy, candidate.opening, candidate.capture, candidate.dock);
+    const m = M.inspect(candidate.joints, candidate.buoy, candidate.opening, candidate.capture, candidate.dock, candidate.supportAngles);
     return m.collision || (!m.captureValid ? 'La pince engagée retient la bouée.' : !m.dockValid ? 'Les boîtes verrouillées doivent rester solidaires.' : '');
   }
   function atTime(time) {
     const p = M.trajectory(time);
     if (!p.ok) return p.reason;
     const reason = validate(p); if (reason) return reason;
-    Object.assign(state, { time: p.time, joints: p.joints, buoy: p.buoy, opening: p.opening, capture: p.capture, dock: p.dock }); return '';
+    Object.assign(state, { time: p.time, joints: p.joints, buoy: p.buoy, opening: p.opening, capture: p.capture, dock: p.dock, supportAngles: p.supportAngles }); return '';
   }
   function reset() { running = false; state.manual = false; atTime(0); $('safety-message').textContent = ''; commit(); }
   function seek(time) { running = false; state.manual = false; const reason = atTime(time); $('safety-message').textContent = reason ? 'Mouvement arrêté : ' + reason : ''; commit(); }
@@ -317,16 +358,18 @@
     if (state.dock === 'LOCKED' || (state.capture === 'ENGAGED' && (kind === 'opening' || (kind === 'buoy' && key !== 'heading')))) {
       $('safety-message').textContent = 'Libérer la liaison temporaire avant de modifier cette mobilité.'; commit(); return;
     }
-    const initial = kind === 'joints' ? state.joints[key] : kind === 'buoy' ? state.buoy[key] : state.opening;
-    const step = kind === 'joints' || key === 'heading' ? 0.2 : 0.005;
+    const initial = kind === 'joints' ? state.joints[key] : kind === 'support' ? state.supportAngles[key] : kind === 'buoy' ? state.buoy[key] : state.opening;
+    const step = kind === 'joints' || kind === 'support' || key === 'heading' || key === 'tilt' ? 0.2 : 0.005;
     const count = Math.max(1, Math.ceil(Math.abs(value - initial) / step));
     for (let n = 1; n <= count; n++) {
       const v = initial + (value - initial) * n / count;
-      const candidate = { ...state, joints: state.joints.slice(), buoy: { ...state.buoy } };
-      if (kind === 'joints') candidate.joints[key] = v; else if (kind === 'buoy') candidate.buoy[key] = v; else candidate.opening = v;
+      const candidate = { ...state, joints: state.joints.slice(), buoy: { ...state.buoy }, supportAngles: state.supportAngles.slice() };
+      if (kind === 'joints') candidate.joints[key] = v;
+      else if (kind === 'support') { candidate.supportAngles[key] = v; if (state.capture === 'ENGAGED') candidate.buoy = M.capturedBuoy(candidate.supportAngles, state.buoy.heading); }
+      else if (kind === 'buoy') candidate.buoy[key] = v; else candidate.opening = v;
       const reason = validate(candidate);
       if (reason) { $('safety-message').textContent = 'Butée virtuelle : ' + reason; break; }
-      Object.assign(state, { joints: candidate.joints, buoy: candidate.buoy, opening: candidate.opening });
+      Object.assign(state, { joints: candidate.joints, buoy: candidate.buoy, opening: candidate.opening, supportAngles: candidate.supportAngles });
     }
     commit();
   }
@@ -336,7 +379,7 @@
     const beta0 = state.joints.slice(0, 4).reduce((sum, v) => sum + v, 0), branch = state.joints[2] > 0 ? 1 : -1;
     for (let n = 1; n <= 160; n++) {
       const u = n / 160, tcp = origin.map((v, i) => v + (targetTCP[i] - v) * u);
-      const ik = M.inverse(tcp, heading0 + (heading - heading0) * u, a10 + (62 - a10) * u, beta0 + (-90 - beta0) * u, branch);
+      const ik = M.inverse(tcp, heading0 + (heading - heading0) * u, a10 + (62 - a10) * u, beta0 + ((state.buoy.tilt || 0) - 90 - beta0) * u, branch);
       const reason = ik.ok ? validate({ ...state, joints: ik.joints }) : ik.reason;
       if (reason) { $('safety-message').textContent = 'Mouvement arrêté : ' + reason; return false; }
       state.joints = ik.joints;
@@ -345,15 +388,16 @@
   }
   for (let i = 0; i < 5; i++) $('slide-j' + (i + 1)).addEventListener('input', e => manualChange('joints', i, Number(e.target.value)));
   buoyItems.forEach((item, i) => $('slide-b' + (i + 1)).addEventListener('input', e => manualChange('buoy', item.key, Number(e.target.value))));
+  $('slide-g1').addEventListener('input', e => manualChange('support', 0, Number(e.target.value)));
   $('slide-opening').addEventListener('input', e => manualChange('opening', null, Number(e.target.value)));
   $('btn-position').addEventListener('click', () => {
-    manualStart(); const candidate = { ...state, buoy: M.neutralBuoy() }; const reason = validate(candidate);
+    manualStart(); const candidate = { ...state, buoy: M.capturedBuoy(state.supportAngles) }; const reason = validate(candidate);
     if (reason) $('safety-message').textContent = 'Pose refusée : ' + reason; else state.buoy = candidate.buoy; commit();
   });
   $('btn-capture').addEventListener('click', () => { manualStart(); if (state.metrics.canCapture) state.capture = 'ENGAGED'; commit(); });
   $('btn-align').addEventListener('click', () => {
-    manualStart(); const targetTCP = M.receiver(state.buoy); targetTCP[2] += 0.35;
-    if (moveTool(targetTCP, state.buoy.heading)) $('safety-message').textContent = 'Faces alignées à 0,35 u. Utiliser « Accoster » pour atteindre le contact.';
+    manualStart(); const targetTCP = M.receiver(state.buoy); const normal = M.buoyRotate([0, 0, 1], state.buoy); targetTCP.forEach((v, i) => targetTCP[i] += normal[i] * 0.35);
+    if (moveTool(targetTCP, state.buoy.heading)) $('safety-message').textContent = 'Faces alignées à 0,35 m. Utiliser « Accoster » pour atteindre le contact.';
     commit();
   });
   // The contact button is created explicitly to distinguish contact from locking.
@@ -367,7 +411,8 @@
   });
   $('btn-dock').addEventListener('click', () => { manualStart(); if (state.dock === 'LOCKED') state.dock = 'OPEN'; else if (state.metrics.canDock) state.dock = 'LOCKED'; commit(); });
   $('btn-retreat').addEventListener('click', () => {
-    manualStart(); const up = M.forward(state.joints).tcp; up[2] = Math.max(up[2], C.socketZ + state.buoy.lift + 0.5);
+    manualStart(); const up = M.forward(state.joints).tcp, normal = M.buoyRotate([0, 0, 1], state.buoy);
+    const distance = Math.max(0, 0.5 - state.metrics.gap); up.forEach((v, i) => up[i] += normal[i] * distance);
     if (moveTool(up, state.joints[4])) moveTool(C.homeTCP, state.joints[4]); commit();
   });
   $('btn-release').addEventListener('click', () => {
@@ -393,7 +438,7 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) { running = false; updateUI(); } });
   new ResizeObserver(() => {
     const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return;
-    camera.aspect = w / h; camera.zoom = w < 720 ? 0.59 : 0.91;
+    camera.aspect = w / h; camera.zoom = w < 720 ? 0.59 : 1.05;
     if (w < 720) camera.setViewOffset(w, h, 0, 38, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix(); renderer.setSize(w, h);
   }).observe(container);
@@ -418,13 +463,19 @@
     const sceneTCP = toMechanical(tool.getWorldPosition(new THREE.Vector3()));
     const sceneAxis = toMechanical(new THREE.Vector3(1, 0, 0).applyQuaternion(q));
     const sceneXAxis = toMechanical(new THREE.Vector3(0, 1, 0).applyQuaternion(q));
-    return { time: state.time, running, manual: state.manual, joints: state.joints.slice(), buoy: { ...state.buoy }, opening: state.opening,
+    return { time: state.time, running, manual: state.manual, joints: state.joints.slice(), buoy: { ...state.buoy }, supportAngles: state.supportAngles.slice(), opening: state.opening,
       capture: state.capture, dock: state.dock, metrics: structuredClone(state.metrics), sceneTCP, sceneAxis, sceneXAxis,
       sceneReceiver: toMechanical(receiverGroup.getWorldPosition(new THREE.Vector3())),
       scenePivots: pivots.map(p => toMechanical(p.getWorldPosition(new THREE.Vector3()))),
       sceneJawPivots: jaws.map(g => toMechanical(g.getWorldPosition(new THREE.Vector3()))),
       sceneJawTips: jaws.map(g => toMechanical(g.localToWorld(new THREE.Vector3(C.jawPivotRadius + (C.jawInner + C.jawOuter) / 2, 0, 0)))),
       jawAngles: jaws.map(g => g.rotation.y / rad),
-      tripod: M.anchors.map(a => ({ length: a.length, top: a.top.slice(), bottom: a.bottom.slice() })) };
+      sceneFixedMount: toMechanical(carrierGroup.getWorldPosition(new THREE.Vector3())),
+      sceneCarrierAxis: toMechanical(new THREE.Vector3(0, -1, 0).applyQuaternion(carrierGroup.getWorldQuaternion(new THREE.Quaternion()))),
+      sceneLongeronCenter: toMechanical(longeronFrame.getWorldPosition(new THREE.Vector3())),
+      sceneFixedToLongeron: longeronFrame.parent === longeron && carrierGroup.parent === longeronFrame && d1Ball.parent === longeronFrame,
+      sceneG4: toMechanical(gripperGroup.getWorldPosition(new THREE.Vector3())),
+      sceneD1: toMechanical(d1Ball.getWorldPosition(new THREE.Vector3())), sceneD2: toMechanical(d2Ball.getWorldPosition(new THREE.Vector3())),
+      sceneDamperAxis: toMechanical(new THREE.Vector3(0, 1, 0).applyQuaternion(damperGroup.quaternion)) };
   } };
 })();

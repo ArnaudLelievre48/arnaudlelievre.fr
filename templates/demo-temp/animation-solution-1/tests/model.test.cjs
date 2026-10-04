@@ -1,76 +1,79 @@
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const M = require('../docking-model.js');
-const neutral = M.solvePlatform([100, 100, 100]);
-const near = (actual, expected, tolerance = 1e-7) => assert.ok(Math.abs(actual - expected) < tolerance, `${actual} != ${expected}`);
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const M=require('../docking-model.js');
+const near=(a,b,t=1e-7)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
+const level={h:0,pitch:0,roll:0};
+const at=(tcp,pose=level,context={})=>{const ik=M.inverse(tcp,pose);assert.ok(ik.ok,ik.reason);return M.inspect(ik.joints,pose,context);};
 
-test('la suspension ferme géométriquement ses trois branches, y compris aux courses extrêmes', () => {
-  for (const s1 of [0, 50, 100, 150, 200]) for (const s2 of [0, 50, 100, 150, 200]) for (const s3 of [0, 50, 100, 150, 200]) {
-    const strokes = [s1, s2, s3], p = M.solvePlatform(strokes);
-    assert.ok(p.ok, JSON.stringify(strokes));
-    M.lengths(p).forEach((l, i) => near(l, M.C.length0 + strokes[i] / M.C.mm));
+test('les trois branches spatiales ferment pour les poses et les courses admissibles',()=>{
+  for(const h of [0,.3,.62])for(const pitch of [-.06,0,.06])for(const roll of [-.05,0,.05]){
+    const expected={h,pitch,roll},strokes=M.strokesForPose(expected),pose=M.solvePlatform(strokes);
+    assert.ok(pose.ok);['h','pitch','roll'].forEach(k=>near(pose[k],expected[k]));
+    M.lengths(pose).forEach((l,i)=>near(l,M.minLengths[i]+strokes[i]/1000));
   }
-  near(neutral.h, 0.45);
-  assert.equal(M.solvePlatform([-1, 100, 100]).ok, false);
-  assert.equal(M.solvePlatform([100, 201, 100]).ok, false);
+  for(const s1 of [0,550,1100])for(const s2 of [0,550,1100])for(const s3 of [0,550,1100])assert.ok(M.solvePlatform([s1,s2,s3]).ok);
+  const [a,b,c]=M.anchors.map(a=>a.top);
+  assert.ok(Math.abs((b[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b[2]-a[2]))>1);
+  assert.equal(M.solvePlatform([-1,0,0]).ok,false);
+  assert.equal(M.solvePlatform([0,1101,0]).ok,false);
 });
 
-test('cinématiques directe et inverse concordent sur une plateforme inclinée', () => {
-  for (const strokes of [[100,100,100], [85,115,100], [120,95,90]]) {
-    const pose = M.solvePlatform(strokes);
-    for (const target of [[0, 1.25, 0], [0.2, 0.6, -0.1], [0, M.C.socketY, 0]]) {
-      const ik = M.inverse(target, pose);
-      assert.ok(ik.ok);
-      const actual = M.forward(ik.joints, pose);
-      actual.tcp.forEach((x, i) => near(x, target[i]));
-      near(actual.axis[1], 1);
+test('le bras possède exactement trois pivots plans et une rotation terminale axiale',()=>{
+  for(const pose of [level,{h:.4,pitch:.06,roll:-.04}])for(const local of [[.65,1.35,0],[0,.8,0],[0,.6,0]]){
+    const tcp=M.toWorld(local,pose),ik=M.inverse(tcp,pose,40);assert.ok(ik.ok);
+    const f=M.forward(ik.joints,pose);f.tcp.forEach((x,i)=>near(x,tcp[i]));
+    const turned=M.forward([...ik.joints.slice(0,3),-70],pose);
+    turned.tcp.forEach((x,i)=>near(x,f.tcp[i]));turned.axis.forEach((x,i)=>near(x,f.axis[i]));
+    assert.ok(Math.hypot(...turned.xAxis.map((x,i)=>x-f.xAxis[i]))>1);
+    const tilted=M.forward([ik.joints[0],ik.joints[1],ik.joints[2]+15,ik.joints[3]],pose);
+    assert.ok(Math.hypot(...tilted.axis.map((x,i)=>x-f.axis[i]))>.2);
+  }
+  assert.equal(M.inverse([0,.8,.1],level).ok,false,'pas de tourelle pour compenser Y');
+  assert.equal(M.inverse([10,0,0],level).ok,false);
+});
+
+test('le cycle est continu, accessible, sans interférence modélisée et respecte les deux captures',()=>{
+  let previous,seenCapture=false,seenContact=false,seenLock=false;
+  for(let tick=0;tick<=1700;tick++){
+    const t=tick/50,tr=M.trajectory(t);assert.ok(tr.ok,`t=${t}`);
+    const solved=M.solvePlatform(tr.strokes);assert.ok(solved.ok);
+    const m=M.inspect(tr.joints,tr.pose,tr);assert.equal(m.collision,'',`t=${t}: ${m.collision}`);
+    m.tcp.forEach((x,i)=>near(x,tr.tcp[i]));
+    if(previous){
+      assert.ok(Math.hypot(...m.tcp.map((v,i)=>v-previous.metrics.tcp[i]))<.016,`TCP discontinu à ${t}`);
+      assert.ok(Math.abs(tr.clampAmount-previous.tr.clampAmount)<.015);
+      tr.joints.forEach((x,i)=>assert.ok(Math.abs(x-previous.tr.joints[i])<2,`A${i+1} discontinu à ${t}`));
     }
+    if(tr.index>=4&&tr.index<=8){assert.ok(m.captured);seenCapture=true;}
+    if(m.connected){assert.ok(m.captured&&m.contact);assert.equal(tr.index,7);seenLock=true;}
+    if(m.contact&&!m.connected)seenContact=true;
+    previous={tr,metrics:m};
   }
-  assert.equal(M.inverse([100,0,0], neutral).ok, false);
+  assert.ok(seenCapture&&seenContact&&seenLock);
+  assert.equal(M.trajectory(0).clampAmount,0);
+  const last=M.trajectory(M.duration),m=M.inspect(last.joints,last.pose,last);
+  assert.equal(m.captureState,'FREE');assert.equal(m.dockState,'OPEN');
 });
 
-test('le cycle complet est continu, atteignable et sans interférence modélisée', () => {
-  let previous, connected = false;
-  for (let tick = 0; tick <= 3600; tick++) {
-    const t = tick / 200, tr = M.trajectory(t), ik = M.inverse(tr.tcp, neutral);
-    assert.ok(ik.ok, `t=${t}`);
-    const m = M.inspect(ik.joints, neutral);
-    assert.equal(m.collision, '', `t=${t}: ${m.collision}`);
-    m.tcp.forEach((x,i) => near(x, tr.tcp[i]));
-    if (previous) assert.ok(Math.hypot(...tr.tcp.map((v,i) => v - previous[i])) < 0.006);
-    previous = tr.tcp;
-    if (tr.name === 'Connecté') { assert.ok(m.connected); connected = true; }
-  }
-  assert.ok(connected);
-  assert.equal(M.trajectory(M.duration).name, 'Retrait');
+test('le contact et le verrouillage exigent centrage, inclinaison et orientation axiale',()=>{
+  const dock=M.inverse([0,M.C.socketY,0],level).joints;
+  const unlocked=M.inspect(dock,level);assert.ok(unlocked.contact);assert.equal(unlocked.connected,false);
+  assert.equal(unlocked.dockState,'CONTACT');
+  assert.ok(M.inspect(dock,level,{clampAmount:1,lockRequested:true}).connected);
+  assert.equal(M.inspect(dock,level,{lockRequested:true}).connected,false);
+  assert.equal(M.inspect([...dock.slice(0,3),12],level,{clampAmount:1,lockRequested:true}).connected,false);
+  assert.equal(at([0,M.C.socketY+.01,0]).contact,false);
+  assert.match(at([0,M.C.socketY-.1,0]).collision,/butée/);
+  assert.match(at([.04,M.C.socketY-.01,0]).collision,/contact|butée/);
+  assert.match(M.inspect(dock,{h:.10,pitch:0,roll:0},{clampAmount:1}).collision,/Capture engagée/);
 });
 
-test('le contact exige centrage, orientation et écart axial signé corrects', () => {
-  const at = target => M.inspect(M.inverse(target, neutral).joints, neutral);
-  assert.ok(at([0,M.C.socketY,0]).connected);
-  assert.equal(at([0,M.C.socketY + 0.01,0]).connected, false);
-  const below = at([0,M.C.socketY - 0.1,0]);
-  assert.ok(below.gap < 0);
-  assert.equal(below.connected, false);
-  assert.match(below.collision, /butée/);
-  const offset = at([0.1,M.C.socketY,0]);
-  assert.equal(offset.connected, false);
-  assert.match(offset.collision, /désaligné/);
-  const dock = M.inverse([0,M.C.socketY,0], neutral);
-  const rigid = M.inspect(dock.joints, neutral, false);
-  assert.ok(rigid.angle > 90);
-  assert.equal(rigid.connected, false);
-});
-
-test('une fiche qui traverse la matière de l’anneau est détectée', () => {
-  const ik = M.inverse([0.6, neutral.h, 0], neutral);
-  assert.ok(ik.ok);
-  assert.match(M.inspect(ik.joints, neutral).collision, /anneau/);
-});
-
-test('le taux d’insertion correspond aux 5 mm utiles des broches', () => {
-  for (const [gap, expected] of [[0.12,0],[0.05,0],[0.025,0.5],[0,1]]) {
-    const ik = M.inverse([0,M.C.socketY + gap,0], neutral);
-    near(M.inspect(ik.joints, neutral).insertion, expected);
-  }
+test('le cadre garde une ouverture et les collisions de la maquette arrêtent les interférences',()=>{
+  assert.ok(M.C.hole>M.C.neckRadius);
+  assert.equal(M.C.frameHalfX-M.C.neckRadius,1);
+  assert.match(at([-.90,.02,0]).collision,/cadre/);
+  assert.match(at([0,.20,0]).collision,/bouée|butée/);
+  const pose={h:1.2,pitch:0,roll:0};
+  assert.match(M.inspect([0,0,0,0],pose).collision,/supérieure/);
+  near(M.jawPositions(1)[0],-.5);near(M.jawPositions(1)[1],.5);
 });
