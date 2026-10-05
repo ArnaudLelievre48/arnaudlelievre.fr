@@ -38,6 +38,11 @@ with sync_playwright() as p:
         near_vector(s['sceneD1'],page.evaluate('DockingModel.C.damperD1'))
         direction=[(b-a)/support['length'] for a,b in zip(support['d1'],support['d2'])]
         near_vector(s['sceneDamperAxis'],direction)
+        actuator=m['actuator']
+        near_vector(s['sceneV1'],actuator['v1']);near_vector(s['sceneV2'],actuator['v2'])
+        near_vector(s['sceneActuatorOrigin'],s['sceneV1']);near_vector(s['sceneActuatorTip'],s['sceneV2'])
+        assert actuator['ok']
+        assert abs(float(page.locator('#actuator-length').inner_text().split()[0].replace(',','.'))-actuator['length'])<.001
         geometry=page.evaluate('s=>[0,1].map(jaw=>({pose:DockingModel.jawPose(jaw,s.opening,s.supportAngles),tip:DockingModel.jawPoint(jaw,jaw?2*Math.PI:0,(DockingModel.C.jawInner+DockingModel.C.jawOuter)/2,s.opening,s.supportAngles)}))',s)
         for jaw,g in enumerate(geometry):
             near_vector(s['sceneJawPivots'][jaw],g['pose']['pivot']);near_vector(s['sceneJawTips'][jaw],g['tip'])

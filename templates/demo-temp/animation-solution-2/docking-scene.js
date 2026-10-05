@@ -177,6 +177,19 @@
     segment([0.075, 0, eyeHeight], [C.jawPivotRadius + r * Math.cos(attachAngle), r * Math.sin(attachAngle), 0], 0.055, materials.support, g, false);
     return g;
   });
+  const actuatorBalls = jaws.map((g, i) => {
+    const anchor = C.actuatorAnchors[i];
+    segment([0, 0, i === 0 ? 0.11 : -0.11], anchor, 0.055, materials.support, g, false);
+    const ball = mesh(new THREE.SphereGeometry(0.09, 24, 16), materials.chrome, g, anchor);
+    ball.name = 'V' + (i + 1); return ball;
+  });
+  const actuatorGroup = new THREE.Group(); actuatorGroup.name = 'JAW_ACTUATOR'; scene.add(actuatorGroup);
+  mesh(new THREE.CylinderGeometry(0.095, 0.095, C.actuatorBodyLength, 24), materials.arm, actuatorGroup).position.y = C.actuatorBodyLength / 2;
+  mesh(new THREE.CylinderGeometry(0.115, 0.115, 0.07, 24), materials.dark, actuatorGroup).position.y = C.actuatorBodyLength - 0.035;
+  const actuatorRod = mesh(new THREE.CylinderGeometry(0.04, 0.04, 1, 16), materials.chrome, actuatorGroup);
+  const actuatorSkeleton = skeletonSegment([0, 0, 0], [0, 0, 1], 0xf4bc69);
+  const actuatorNodes = [jointNode([0, 0, 0]), jointNode([0, 0, 0])];
+  const actuatorLevers = C.actuatorAnchors.map(anchor => skeletonSegment([0, 0, 0], anchor, 0x6be4d3));
   const jawOutlines = [0, Math.PI].map(a => {
     const r = (C.jawInner + C.jawOuter) / 2;
     const points = Array.from({ length: 65 }, (_, i) => new THREE.Vector3(C.jawPivotRadius + Math.cos(a + i / 64 * Math.PI) * r, 0, -Math.sin(a + i / 64 * Math.PI) * r));
@@ -231,6 +244,8 @@
   label('G4 · PIVOT Y', g4Pin, [0, 0.22, 0], 'tool');
   label('D1 · SUR LONGERON', d1Ball, [0, 0.2, 0]); label('D2 · ROTULE MOBILE', d2Ball, [0.1, -0.2, 0]);
   label('AMORTISSEUR', damperGroup, [0.15, 0.45, 0]);
+  label('VÉRIN DE FERMETURE', actuatorGroup, [0.15, 0.3, 0]);
+  actuatorBalls.forEach((ball, i) => label('V' + (i + 1) + ' · ROTULE', ball, [0, 0, 0.16]));
   label('ÉLÉMENT VERTICAL · FONCTION ?', localElement, [0, 0.35, 0]);
   label('EAU · Z = 0', null, [-3.4, 0.04, 2.2]);
   label('X', null, vector([-3.15, 1.8, -1.9]).toArray());
@@ -262,6 +277,21 @@
       g.rotation.y = pose.angle * rad;
     });
     const support = state.metrics.support;
+    const actuator = state.metrics.actuator;
+    actuatorGroup.position.copy(vector(actuator.v1));
+    actuatorGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(actuator.v2).sub(vector(actuator.v1)).normalize());
+    const actuatorRodLength = actuator.length - C.actuatorBodyLength + 0.06;
+    actuatorRod.scale.y = actuatorRodLength;
+    actuatorRod.position.y = C.actuatorBodyLength - 0.06 + actuatorRodLength / 2;
+    actuatorSkeleton.position.copy(vector(actuator.v1)).add(vector(actuator.v2)).multiplyScalar(0.5);
+    actuatorSkeleton.scale.y = actuator.length;
+    actuatorSkeleton.quaternion.copy(actuatorGroup.quaternion);
+    [actuator.v1, actuator.v2].forEach((anchor, i) => {
+      actuatorNodes[i].position.copy(vector(anchor));
+      actuatorLevers[i].position.copy(vector(support.hinge)).add(vector(anchor)).multiplyScalar(0.5);
+      actuatorLevers[i].quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(anchor).sub(vector(support.hinge)).normalize());
+      actuatorLevers[i].scale.y = vector(anchor).distanceTo(vector(support.hinge)) / Math.hypot(...C.actuatorAnchors[i]);
+    });
     damperGroup.position.copy(vector(support.d1));
     damperGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vector(support.d2).sub(vector(support.d1)).normalize());
     const rodLength = support.length - C.damperBodyLength + 0.06;
@@ -323,6 +353,8 @@
     buoyItems.forEach((item, i) => { $('slide-b' + (i + 1)).value = state.buoy[item.key]; $('txt-b' + (i + 1)).textContent = number(state.buoy[item.key], item.unit === '°' ? 1 : 2) + ' ' + item.unit; $('slide-b' + (i + 1)).disabled = state.dock === 'LOCKED' || (state.capture === 'ENGAGED' && item.key !== 'heading'); });
     state.supportAngles.forEach((v, i) => { $('slide-g' + (i + 1)).value = v; $('txt-g' + (i + 1)).textContent = number(v, 1) + '°'; $('slide-g' + (i + 1)).disabled = state.dock === 'LOCKED'; });
     $('damper-length').textContent = number(m.support.length, 3) + ' m'; $('damper-extension').textContent = number(m.support.extension, 3) + ' m';
+    $('actuator-length').textContent = number(m.actuator.length, 3) + ' m';
+    $('actuator-extension').textContent = number(m.actuator.extension, 3) + ' m';
     $('gripper-tilt').textContent = number(m.support.tilt, 1) + '°';
     $('slide-opening').value = state.opening; $('txt-opening').textContent = number(state.opening * C.jawMaxAngle, 1) + '° / demi-pince'; $('slide-opening').disabled = state.capture === 'ENGAGED';
     $('btn-position').disabled = state.capture === 'ENGAGED'; $('btn-capture').disabled = state.capture === 'ENGAGED' || !m.canCapture;
@@ -470,6 +502,10 @@
       sceneJawPivots: jaws.map(g => toMechanical(g.getWorldPosition(new THREE.Vector3()))),
       sceneJawTips: jaws.map(g => toMechanical(g.localToWorld(new THREE.Vector3(C.jawPivotRadius + (C.jawInner + C.jawOuter) / 2, 0, 0)))),
       jawAngles: jaws.map(g => g.rotation.y / rad),
+      sceneV1: toMechanical(actuatorBalls[0].getWorldPosition(new THREE.Vector3())),
+      sceneV2: toMechanical(actuatorBalls[1].getWorldPosition(new THREE.Vector3())),
+      sceneActuatorOrigin: toMechanical(actuatorGroup.getWorldPosition(new THREE.Vector3())),
+      sceneActuatorTip: toMechanical(actuatorGroup.localToWorld(new THREE.Vector3(0, state.metrics.actuator.length, 0))),
       sceneFixedMount: toMechanical(carrierGroup.getWorldPosition(new THREE.Vector3())),
       sceneCarrierAxis: toMechanical(new THREE.Vector3(0, -1, 0).applyQuaternion(carrierGroup.getWorldQuaternion(new THREE.Quaternion()))),
       sceneLongeronCenter: toMechanical(longeronFrame.getWorldPosition(new THREE.Vector3())),

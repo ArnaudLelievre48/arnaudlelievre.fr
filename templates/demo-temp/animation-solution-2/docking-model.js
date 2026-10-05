@@ -1,6 +1,6 @@
 /* Geometric demonstrator: specification_liaisons_docking_solution_2.md.
  * Mechanical coordinates X right, Y towards observer, Z up; metres (illustrative dimensions).
- * No inferred actuators, base turret, vertical slide, dynamics or electrical model.
+ * User-requested jaw actuator; no base turret, vertical slide, dynamics or electrical model.
  */
 (function (root) {
   'use strict';
@@ -22,6 +22,8 @@
     captureX: 3.43, collarZ: 0.7, collarRadius: 1.86,
     socketZ: 2.5, neckTop: 2.16, jawZ: 0.7, jawInner: 2, jawOuter: 2.2,
     jawThickness: 0.12, jawPivotRadius: 2.38, jawMaxAngle: 65,
+    actuatorAnchors: Object.freeze([Object.freeze([-0.85, -0.35, 0.5]), Object.freeze([-0.85, 0.35, 1.3])]),
+    actuatorBodyLength: 0.98, actuatorMin: Math.hypot(0.7, 0.8), actuatorMax: 2.05,
     carrierMount: Object.freeze([0.85, 0, 1.85]), carrierLength: 1.15,
     longeronMount: Object.freeze([-0.2, 0, 3.55 - Math.sqrt(2.2 ** 2 - 1.55 ** 2)]),
     damperD1: Object.freeze([-1.75 + Math.sqrt(2.2 ** 2 - 0.65 ** 2), 0, 2.9]),
@@ -140,6 +142,17 @@
     const x = C.jawPivotRadius + radius * Math.cos(arcAngle), y = radius * Math.sin(arcAngle);
     return add(pose.pivot, rotateXZ([x * Math.cos(angle) - y * Math.sin(angle), x * Math.sin(angle) + y * Math.cos(angle), height], pose.tilt));
   }
+  // Rear levers convert actuator retraction into opposite jaw rotations.
+  function actuatorForward(opening, angles = [0]) {
+    const anchors = C.actuatorAnchors.map((point, jaw) => {
+      const pose = jawPose(jaw, opening, angles), a = pose.angle * rad;
+      return add(pose.pivot, rotateXZ([point[0] * Math.cos(a) - point[1] * Math.sin(a),
+        point[0] * Math.sin(a) + point[1] * Math.cos(a), point[2]], pose.tilt));
+    });
+    const length = norm(sub(anchors[1], anchors[0]));
+    return { v1: anchors[0], v2: anchors[1], length, extension: length - C.actuatorMin,
+      ok: length >= C.actuatorMin - 1e-9 && length <= C.actuatorMax + 1e-9 };
+  }
   function gripperHitsBuoy(buoy, opening, angles = [0]) {
     for (let jaw = 0; jaw < 2; jaw++) {
       for (let tick = 0; tick <= 48; tick++) {
@@ -165,7 +178,9 @@
     const platformMin = [C.platformMinX, -C.platformWidth / 2, C.platformZ - C.platformThickness / 2];
     const platformMax = [C.platformMaxX, C.platformWidth / 2, C.platformZ + C.platformThickness / 2];
     const support = supportForward(angles);
+    const actuator = actuatorForward(opening, angles);
     if (!support.ok) collision = 'Butée du support ou course de l’amortisseur';
+    if (!actuator.ok) collision = 'Course du vérin de fermeture';
     for (let i = 0; i < 4; i++) {
       const a = f.points[i], b = f.points[i + 1], r = i === 3 ? 0.06 : 0.1;
       if (segmentHitsBox(a, b, platformMin, platformMax, r)) collision = 'Bras / plateforme';
@@ -187,14 +202,14 @@
     if (opening < 0.1 && (cap.lateral > 0.08 || cap.height > 0.05 || cap.tiltError > 3)) collision = 'Pince / zone de capture désalignée';
     const contact = !collision && aligned && Math.abs(gap) <= C.seatTolerance;
     const canCapture = !collision && cap.ready, canDock = contact && capture === 'ENGAGED';
-    return { ...f, target, normal, gap, radial, angle, keyAngle, aligned, collision, contact, canCapture, canDock, support,
+    return { ...f, target, normal, gap, radial, angle, keyAngle, aligned, collision, contact, canCapture, canDock, support, actuator,
       captureValid: capture !== 'ENGAGED' || canCapture, dockValid: dock !== 'LOCKED' || canDock,
       captureOffset: cap.lateral, approach: aligned && !collision ? clamp(1 - Math.max(0, gap) / 0.35, 0, 1) : 0 };
   }
   const phases = [
     { name: 'Bouée libre', duration: 2, note: 'La bouée flotte indépendamment. BOX_2 suit son corps rigide ; le bras reste dégagé.' },
     { name: 'Approche', duration: 4, note: 'La bouée entre entre les mors ouverts. Son déplacement est prescrit pour illustrer la capture.' },
-    { name: 'Capture grossière', duration: 3, note: 'Les deux demi-pinces pivotent en sens opposés autour de leur axe Z commun pour envelopper la bouée sous sa collerette.' },
+    { name: 'Capture grossière', duration: 3, note: 'Le vérin V1–V2 se rétracte entre ses deux rotules. Les leviers solidaires des demi-pinces les font pivoter en sens opposés pour envelopper la bouée.' },
     { name: 'Verrouillage pince', duration: 1, note: 'La capture retient la bouée dans la pince. Le porte-pince est encastré dans le longeron ; G4 conserve l’inclinaison de la pince.' },
     { name: 'Stabilisation amortie', duration: 6, note: 'La pince oscille autour de G4. D1 reste sur le longeron, D2 suit le levier de la pince et l’amortisseur change de longueur. Mouvement décroissant prescrit, sans calcul des efforts.' },
     { name: 'Approche du bras', duration: 5, note: 'A1–A4 amènent BOX_1 au-dessus de BOX_2. A4 garde l’axe terminal vertical.' },
@@ -234,7 +249,7 @@
     return { index, name: phases[index].name, fraction, time: t, buoy, opening, capture, dock, supportAngles, tcp, ...ik, metrics };
   }
   const api = { C, supportForward, rotateXZ, gripperToWorld, capturedBuoy, buoyRotate, buoyToWorld, buoyToLocal, buoyProfile, buoyRadius, neutralBuoy, receiver, forward, inverse, inspect,
-    captureCheck, jawPose, jawPoint, gripperHitsBuoy, trajectory, phases, duration, segmentHitsBox, smooth, toScene: p => [p[0], p[2], -p[1]] };
+    captureCheck, jawPose, jawPoint, actuatorForward, gripperHitsBuoy, trajectory, phases, duration, segmentHitsBox, smooth, toScene: p => [p[0], p[2], -p[1]] };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DockingModel = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

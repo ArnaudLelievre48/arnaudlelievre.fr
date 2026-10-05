@@ -128,3 +128,33 @@ test('les collisions avec la plateforme et les butées du support sont détecté
   assert.match(M.inspect(M.trajectory(0).joints,buoy,1,'OPEN','OPEN',[19]).collision,/Butée/);
   assert.equal(M.segmentHitsBox([0,0,7],[0,0,0],[-1,-1,5],[1,1,6]),true);
 });
+
+
+test('vérin à rotules : fermeture par rétraction, attaches solidaires des bras et course indépendante de G4',()=>{
+  let previous=0;
+  for(let tick=0;tick<=100;tick++) {
+    const opening=tick/100, neutral=M.actuatorForward(opening);
+    assert.ok(neutral.ok);assert.ok(neutral.length>previous);previous=neutral.length;
+    const alpha=opening*C.jawMaxAngle*Math.PI/180;
+    near(neutral.length,Math.hypot(2*(.85*Math.sin(alpha)+.35*Math.cos(alpha)),.8));
+    assert.ok(neutral.extension<C.actuatorBodyLength);
+    for(const g4 of [-18,0,18]) {
+      const p=M.actuatorForward(opening,[g4]),hinge=M.supportForward([g4]).hinge;
+      near(p.length,neutral.length);
+      for(const [jaw,anchor] of [[0,p.v1],[1,p.v2]]) {
+        near(distance(anchor,hinge),Math.hypot(...C.actuatorAnchors[jaw]));
+        const local=M.rotateXZ(anchor.map((v,i)=>v-hinge[i]),-g4);
+        const a=M.jawPose(jaw,opening).angle*Math.PI/180;
+        nearVector([local[0]*Math.cos(a)+local[1]*Math.sin(a),-local[0]*Math.sin(a)+local[1]*Math.cos(a),local[2]],C.actuatorAnchors[jaw]);
+      }
+    }
+  }
+  near(M.actuatorForward(0).length,Math.hypot(.7,.8));
+  near(M.actuatorForward(0).extension,0);
+  assert.ok(M.actuatorForward(1).extension>.94);
+  assert.ok(M.actuatorForward(1).length<C.actuatorMax);
+  for(const t of [6,7,8,9]) {
+    const pose=M.trajectory(t);near(pose.metrics.actuator.length,M.actuatorForward(pose.opening,pose.supportAngles).length);
+    if(t>6) assert.ok(pose.metrics.actuator.length<M.trajectory(t-1).metrics.actuator.length);
+  }
+});

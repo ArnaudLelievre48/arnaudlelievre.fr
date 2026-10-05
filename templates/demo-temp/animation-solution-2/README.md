@@ -34,6 +34,7 @@ PLATFORM — supports inclinés — LONGERON
 WORLD — bouée indépendante [corps évasé + col + BOX_2, tous solidaires]
 
 Pince / zone large de bouée : OPEN ↔ ENGAGED
+Demi-pince 1 — V1(rotule) — vérin corps/tige — V2(rotule) — demi-pince 2
 BOX_1 / BOX_2              : OPEN ↔ LOCKED
 ```
 
@@ -57,6 +58,16 @@ un choix explicite, puisque le croquis seul ne précise pas le mode de fermeture
 La charnière de fermeture est distincte de G4 et de la pièce verticale de fonction inconnue.
 Elle appartient à la pince et suit son inclinaison ; ouverture maximale illustrative :
 65° par demi-pince autour de leur axe vertical local commun.
+
+Un **vérin de fermeture** est relié aux deux bras par les **rotules V1 et V2**,
+fixées sur des leviers arrière solidaires des demi-pinces. Il se rétracte pour
+fermer les pinces et s’allonge pour les ouvrir. Le corps et la tige sont distincts ;
+les rotules suivent chaque bras et l’ensemble suit G4. La longueur et la sortie
+par rapport à la position fermée sont affichées dans l’interface. Le mode
+« Schéma 3D » représente également le vérin, ses leviers et ses deux rotules.
+Ce vérin commande la fermeture ; l’amortisseur D1–D2 conserve sa fonction sur G4.
+La fermeture symétrique reste prescrite : aucun effort ni circuit hydraulique
+n’est calculé, et le type d’alimentation du vérin n’est pas spécifié.
 
 ## Cycle et mobilité après capture
 
@@ -144,6 +155,7 @@ comme indications de reconstruction ; elles ne constituent pas un plan coté val
 | D2 | Rotule sur le levier solidaire de la pince mobile | Raccordement retenu pour amortir G4 ; géométrie du levier illustrative |
 | Amortisseur | Rotules D1–D2, corps + tige, longueur 1,6–2,3 m | Course choisie ; coefficient et ressort inconnus |
 | Pince | Deux demi-pinces à fermeture angulaire | Précision de conception antérieure conservée |
+| Vérin de fermeture | Rotules V1–V2 sur les deux bras ; longueur 1,063–2,003 m ; corps 0,98 m | Ajout demandé ; attaches et course illustratives |
 | Pièce verticale locale | Pièce distincte fixée à la pince | Fonction inconnue ; aucune action imposée |
 | Capture | Point et inclinaison retenus dans la pince, rotation locale libre | Mobilités réelles résiduelles inconnues |
 | Docking | Encastrement temporaire après contact | Hypothèse de première maquette |
@@ -175,15 +187,15 @@ python3 tests/browser_smoke.py
 python3 tests/browser_smoke.py /chemin/vers/chrome
 ```
 
-Les huit tests numériques couvrent les cotes indicatives, la fermeture cinématique
+Les tests numériques couvrent les cotes indicatives, la fermeture cinématique
 G4/D1–D2, l’immobilité du montant, les fixations sur le longeron, le levier mobile,
 la mobilité après capture, le docking
 sur une bouée inclinée, **3 001 poses** du cycle, l’amplitude décroissante, les contacts,
-les butées et le dégagement des demi-pinces.
+les butées, le dégagement des demi-pinces et la course monotone du vérin avec ses attaches solidaires des bras.
 
 Le test navigateur nécessite Playwright et Chromium. Il ouvre le HTML local hors
 connexion et compare **121 poses** à la scène Three.js : bras, pivots, rotules,
-axe de l’amortisseur, charnière et pointes des demi-pinces. Il vérifie le parcours manuel
+axe de l’amortisseur, charnière, pointes des demi-pinces et raccordement du vérin aux rotules V1–V2. Il vérifie le parcours manuel
 avec porte-pince fixe, pince mobile et boîtes inclinées, le cycle automatique, la pause/reprise,
 l’arrêt aux interférences, les schémas et l’affichage mobile. Captures : `/tmp/docking-*.png`.
 

@@ -70,7 +70,7 @@
       <section class="panel-section">
         <div class="section-heading"><h3>Pince amortie · G4</h3><small>D1 ↔ D2</small></div>
         <div id="support-controls"></div>
-        <div class="pose-grid"><div><span>Longueur D1–D2</span><output id="damper-length">—</output></div><div><span>Écart au repos</span><output id="damper-extension">—</output></div><div><span>Inclinaison pince</span><output id="gripper-tilt">—</output></div></div>
+        <div class="pose-grid"><div><span>Longueur D1–D2</span><output id="damper-length">—</output></div><div><span>Écart au repos</span><output id="damper-extension">—</output></div><div><span>Longueur vérin V1–V2</span><output id="actuator-length">—</output></div><div><span>Sortie depuis la fermeture</span><output id="actuator-extension">—</output></div><div><span>Inclinaison pince</span><output id="gripper-tilt">—</output></div></div>
         <p class="technical">Le porte-pince est encastré dans le longeron. G4 incline la pince et son levier D2. D1 est fixé au longeron ; l’amortisseur travaille entre D1 et D2. Après capture, la bouée suit la pince.</p>
       </section>
       <section class="panel-section">
@@ -84,7 +84,7 @@
         <p class="technical">Après capture : la bouée suit la pince mobile autour de G4 ; sa rotation locale reste libre. Après docking : les commandes de pose sont verrouillées.</p>
       </section>
       <section class="panel-section">
-        <p class="notice"><b>Reconstruction.</b> Deux demi-pinces pivotent en sens opposés autour d’un axe Z commun pour envelopper la bouée. Le porte-pince est encastré dans le longeron. G4 incline la pince ; l’amortisseur relie D1 sur le longeron à D2 sur la pince.</p>
+        <p class="notice"><b>Reconstruction.</b> Le vérin de fermeture, relié aux deux bras par les rotules V1 et V2, se rétracte pour faire pivoter les demi-pinces en sens opposés et envelopper la bouée. Le porte-pince est encastré dans le longeron. G4 incline la pince ; l’amortisseur relie D1 sur le longeron à D2 sur la pince.</p>
         <button class="model-link" data-open-model>Voir les schémas fonctionnel et cinématique ↗</button>
         <p class="technical">Cotes manuscrites indicatives : plateforme ≈ 5 m, écart vertical ≈ 3–4 m, capture Ø ≈ 4 m. Les autres dimensions sont illustratives. Animation sans calcul d’efforts ni de flottabilité.</p>
       </section>
@@ -96,7 +96,7 @@
       <h3>01 / Schéma fonctionnel</h3>
       <div class="functional-flow">
         <div><b>APPROCHER</b>Bouée libre<small>Deux assemblages indépendants, bras supérieur dégagé.</small></div>
-        <div><b>CAPTURER</b>Envelopper la bouée<small>Deux demi-pinces articulées retiennent la zone large.</small></div>
+        <div><b>CAPTURER</b>Envelopper la bouée<small>Le vérin referme deux demi-pinces articulées sur la zone large.</small></div>
         <div><b>AMORTIR</b>Accompagner le mouvement<small>G4 incline la pince ; D1 reste sur le longeron, D2 suit la pince.</small></div>
         <div><b>ALIGNER</b>Positionner BOX_1<small>A1–A4 corrigent la position et l’inclinaison ; A5 ajuste l’azimut.</small></div>
         <div><b>ACCOUPLER</b>Verrouiller les boîtes<small>Faces opposées, contact puis liaison temporaire.</small></div>
@@ -129,7 +129,7 @@
         <tr><td>Fixations au longeron</td><td>Bras porte-pince encastré ; D1 fixé au longeron</td><td>Précision de conception fournie par l’utilisateur ; remplace l’ancien pivot G1 supposé.</td></tr>
         <tr><td>Pince mobile</td><td>Bras fixe → G4 → pince et levier D2</td><td>G4 conservé comme pivot Y. D2 placé sur la pince mobile pour permettre le travail de l’amortisseur ; géométrie du levier illustrative.</td></tr>
         <tr><td>Amortisseur</td><td>Corps + tige mobile, rotules D1 et D2</td><td>D1 côté longeron, D2 côté pince. Longueur calculée par les ancrages ; course illustrative. Aucun ressort supposé.</td></tr>
-        <tr><td>Pince</td><td>Capture périphérique Ø intérieur 4 m ; deux demi-pinces pivotantes</td><td>Diamètre manuscrit approximatif. Fermeture « câlin » conservée de ta précision précédente, car l’ouverture reste inconnue dans le document.</td></tr>
+        <tr><td>Pince</td><td>Capture périphérique Ø intérieur 4 m ; deux demi-pinces pivotantes</td><td>Diamètre manuscrit approximatif. Fermeture « câlin » par un vérin à deux rotules, selon tes précisions. Attaches et course illustratives.</td></tr>
         <tr><td>Élément vertical local</td><td>Pièce distincte avec tête et partie inférieure</td><td>Fonction inconnue : ni verrou ni actionneur attribué automatiquement.</td></tr>
         <tr><td>Bouée capturée</td><td>Suit la pince en position et inclinaison, rotation locale libre</td><td>Contrainte de démonstration laissant G4 mobile ; mobilités réelles résiduelles inconnues.</td></tr>
         <tr><td>Docking</td><td>Contact, puis liaison démontable supposée rigide</td><td>Verrouillage et nature électrique exacts inconnus.</td></tr>

@@ -5,7 +5,7 @@
 >
 > **Important** : le dessin est une **projection 2D d'un mécanisme destiné à être tridimensionnel**. Un croisement de traits dans le dessin ne crée pas automatiquement une liaison. Les pièces qui se superposent graphiquement peuvent être décalées suivant la profondeur. Les interprétations qui ne sont pas directement démontrées par le croquis sont explicitement marquées comme hypothèses.
 
-> **Précisions de conception de l’utilisateur, intégrées à cette version** : le bras porte-pince est **encastré dans le longeron** ; la rotule **D1 est fixée au longeron**. L’ancien pivot supposé `G1` est supprimé. Le pivot inférieur `G4` est conservé ; dans la reconstruction, `D2` est rattaché au levier solidaire de la pince mobile afin que l’amortisseur travaille sur ce mouvement. Ce raccordement de D2 est un choix de reconstruction, sa géométrie exacte restant à préciser. La pince comporte deux demi-pinces se refermant angulairement comme un câlin, conformément à la précision antérieure de l’utilisateur. Ces précisions remplacent les anciennes interprétations du croquis sur ces points.
+> **Précisions de conception de l’utilisateur, intégrées à cette version** : le bras porte-pince est **encastré dans le longeron** ; la rotule **D1 est fixée au longeron**. L’ancien pivot supposé `G1` est supprimé. Le pivot inférieur `G4` est conservé ; dans la reconstruction, `D2` est rattaché au levier solidaire de la pince mobile afin que l’amortisseur travaille sur ce mouvement. Ce raccordement de D2 est un choix de reconstruction, sa géométrie exacte restant à préciser. La pince comporte deux demi-pinces se refermant angulairement comme un câlin, conformément à la précision antérieure de l’utilisateur. Un **vérin de fermeture relié aux deux bras par les rotules V1 et V2** est ajouté à la demande de l’utilisateur. Ces précisions remplacent les anciennes interprétations du croquis sur ces points.
 
 ---
 
@@ -58,7 +58,8 @@ Le système visible contient au minimum cinq sous-ensembles fonctionnels :
    - pince ou anneau de capture de grand diamètre ;
    - articulation G4 de raccordement au bras porte-pince fixe ;
    - au moins un élément vertical local pouvant être un verrou, pion, vis ou actionneur ;
-   - géométrie de retenue autour de la partie large de la bouée.
+   - géométrie de retenue autour de la partie large de la bouée ;
+   - vérin de fermeture corps/tige, relié aux demi-pinces par les rotules V1 et V2 et leurs leviers solidaires.
 
 5. `BUOY_ASSEMBLY`
    - corps principal de la bouée ;
@@ -713,7 +714,56 @@ closure = opposite rotations about a shared local vertical hinge
 
 Cette charnière de fermeture est distincte de G4 : G4 incline l’ensemble de la pince dans le plan XZ ; la charnière ouvre et referme les deux demi-pinces autour de la bouée. Elle suit donc l’inclinaison de l’ensemble.
 
-L’angle maximal illustratif de l’animation est de 65° par demi-pince. Le dessin seul ne définit ni cet angle, ni la motorisation, ni les détails du verrouillage. La pièce verticale locale de fonction inconnue reste distincte.
+L’angle maximal illustratif de l’animation est de 65° par demi-pince. Le dessin seul ne définit ni cet angle ni les détails du verrouillage ; le vérin de fermeture à deux rotules provient de la précision de conception de l’utilisateur. La pièce verticale locale de fonction inconnue reste distincte.
+
+---
+
+## 19.1 Vérin de fermeture à deux rotules `JAW_ACTUATOR`
+
+Un vérin unique relie les **deux bras des demi-pinces** par deux rotules :
+
+```text
+GRIPPER_JAW_1 --V1(SPHERICAL)--> ACTUATOR_BODY
+ACTUATOR_BODY --PRISMATIC(axial)--> ACTUATOR_ROD
+ACTUATOR_ROD --V2(SPHERICAL)--> GRIPPER_JAW_2
+```
+
+V1 et V2 sont fixées sur des leviers arrière solidaires de leurs bras respectifs.
+Le corps est côté V1, la tige côté V2. Les leviers transforment la rétraction du
+vérin en fermeture des deux demi-pinces ; l’allongement produit l’ouverture.
+Les rotules autorisent le changement d’orientation du vérin. L’ensemble suit
+l’inclinaison de la pince autour de G4.
+
+Dans le repère local de la charnière, les attaches illustratives, exprimées en
+mètres avant rotation des bras, sont `v1 = (-0,85 ; -0,35 ; 0,50)` et
+`v2 = (-0,85 ; +0,35 ; 1,30)`. La surélévation et le déport arrière placent le
+vérin à l’extérieur de la zone de capture de la bouée.
+Pour une ouverture normalisée `u` et `alpha = 65° × u` :
+
+```text
+V1_world = hinge_world + R_G4 * R_Z(+alpha) * v1
+V2_world = hinge_world + R_G4 * R_Z(-alpha) * v2
+length_ACTUATOR = norm(V2_world - V1_world)
+                 = sqrt((2 * (0.85 * sin(alpha) + 0.35 * cos(alpha)))^2 + 0.8^2)
+```
+
+La longueur entre rotules croît de **1,063 m** à **2,003 m** entre fermeture et
+ouverture maximale, soit une course utile d’environ **0,940 m**. Le corps visible
+mesure **0,98 m** ; les limites illustratives retenues sont **1,063–2,05 m**.
+L’animation calcule les attaches et la longueur à chaque pose et oriente le corps
+et la tige suivant V1–V2. Les rotules restent attachées à leurs bras pendant
+la fermeture automatique, l’exploration manuelle et la stabilisation en G4.
+
+La fermeture symétrique est prescrite dans cette démonstration : elle ne résout
+pas la dynamique de la boucle mécanique. Un vérin unique à rotules n’impose pas,
+à lui seul, l’égalité des angles des deux bras ; une synchronisation mécanique ou
+une commande adaptée serait à préciser pour une réalisation. Aucun effort,
+pression, débit, diamètre d’alésage ni maintien sous charge n’est dimensionné.
+Le type d’alimentation reste inconnu. Le verrouillage de capture reste un état
+fonctionnel distinct de la fermeture. La pièce verticale locale de fonction
+inconnue reste distincte du nouveau vérin, comme l’amortisseur D1–D2.
+Les collisions détaillées du vérin et des leviers avec toutes les autres pièces
+ne sont pas validées par cette maquette.
 
 ---
 
@@ -1142,6 +1192,9 @@ L'ordre exact des verrouillages n'est pas explicitement fourni par le croquis.
 | LONGERON | DAMPER | Rotule `D1` | angulaire 3D | rotule annotée ; parent précisé par l’utilisateur |
 | GRIPPER | DAMPER | Rotule `D2` | angulaire 3D | rotule annotée ; parent mobile retenu pour amortir G4 |
 | GRIPPER_CARRIER | GRIPPER | Pivot `G4` | axe ≈ Y en 2D | visible, type 3D exact inconnu |
+| GRIPPER_JAW_1 | ACTUATOR_BODY | Rotule `V1` | angulaire 3D | précision utilisateur ; attache illustrative |
+| ACTUATOR_BODY | ACTUATOR_ROD | Glissière axiale commandée | translation suivant V1–V2 | vérin de fermeture demandé |
+| ACTUATOR_ROD | GRIPPER_JAW_2 | Rotule `V2` | angulaire 3D | précision utilisateur ; attache illustrative |
 | GRIPPER | BUOY_CAPTURE_REGION | Capture désaccouplable | DOF résiduels inconnus | fonctionnellement suggéré |
 | BOX_1 | BOX_2 | Liaison désaccouplable | DOF verrouillés inconnus | fonctionnellement suggéré |
 
@@ -1175,7 +1228,8 @@ L'ordre exact des verrouillages n'est pas explicitement fourni par le croquis.
 
 - bras porte-pince encastré directement dans le longeron, sans pivot G1 ;
 - D1 fixé au longeron ;
-- fermeture angulaire de deux demi-pinces comme un câlin.
+- fermeture angulaire de deux demi-pinces comme un câlin ;
+- vérin relié aux deux bras par des rotules V1 et V2 pour les refermer.
 
 Le placement de D2 sur la pince mobile est un **choix de reconstruction** pour conserver l’action de l’amortisseur sur G4 ; sa géométrie exacte reste à confirmer.
 
@@ -1224,7 +1278,7 @@ Ne pas halluciner les paramètres suivants :
 - présence et raideur d'un ressort associé ;
 - type exact de `G4` en 3D ;
 - amplitude de débattement de la pince autour de G4 ;
-- détails de la charnière et de la motorisation des deux demi-pinces ;
+- détails de la charnière, synchronisation des bras et dimensionnement du vérin de fermeture ;
 - géométrie exacte du levier D2 côté pince ;
 - fonction du petit élément vertical sur la pince ;
 - profil exact de la zone de capture de la bouée ;
@@ -1276,11 +1330,30 @@ system:
     - BOX_1
     - GRIPPER_CARRIER
     - GRIPPER
+    - GRIPPER_JAW_1
+    - GRIPPER_JAW_2
+    - ACTUATOR_BODY
+    - ACTUATOR_ROD
     - BUOY_MAIN_BODY
     - BOX_2
 
   compliant_or_variable_length_elements:
     - DAMPER
+    - JAW_ACTUATOR
+
+  jaw_actuator:
+    id: JAW_ACTUATOR
+    origin: user_design_instruction
+    body: ACTUATOR_BODY
+    rod: ACTUATOR_ROD
+    variable_length_axis: "line(V1,V2)"
+    end_joints:
+      - {id: V1, parent: GRIPPER_JAW_1, type: SPHERICAL}
+      - {id: V2, parent: GRIPPER_JAW_2, type: SPHERICAL}
+    internal_joint: PRISMATIC
+    closing_motion: retraction
+    illustrative_length_limits_m: [1.063014581273465, 2.05]
+    symmetric_jaw_motion: prescribed_not_dynamically_solved
 
   permanent_joints:
     - parent: PLATFORM
@@ -1449,7 +1522,7 @@ Après inspection du croquis de la Solution 2, les points suivants sont essentie
 20. **La capture par la pince et l'accouplement `BOX_1/BOX_2` sont deux interfaces temporaires distinctes**.
 21. **La présence de l'amortisseur suggère une liaison non parfaitement rigide entre la bouée capturée et la plateforme** ; ne pas supprimer cette mobilité sans justification.
 22. **Aucun symbole ne justifie une rotation de tourelle de l'embase du bras autour de `Z`**.
-23. **Deux demi-pinces se referment angulairement comme un câlin**, selon la précision de l’utilisateur ; motorisation et verrouillage exacts restent inconnus.
+23. **Deux demi-pinces se referment angulairement comme un câlin**, selon la précision de l’utilisateur ; un vérin à rotules V1–V2 referme les deux bras, tandis que les détails du verrouillage restent inconnus.
 24. **Aucun détail ne permet de déterminer la fonction précise du petit pion/actionneur vertical dessiné sur la pince**.
 25. **La largeur suivant `Y` de toutes les pièces doit être définie comme paramètre de conception**, car elle n'est pas fournie par la projection.
 
@@ -1457,4 +1530,4 @@ Après inspection du croquis de la Solution 2, les points suivants sont essentie
 
 # 36. Résumé minimal à transmettre à un générateur 3D
 
-Créer une plateforme rigide horizontale d'environ 5 m portant sous elle un grand longeron cylindrique/tubulaire vu en section et maintenu par des supports inclinés. Sur la plateforme est fixé un bras série à quatre pivots coplanaires `A1-A4`, terminé par une rotation axiale `A5` portant `BOX_1`. À droite et sous le longeron, un bras porte-pince est encastré directement dans le longeron. La rotule D1 est fixée au longeron. Le pivot inférieur G4 permet à la pince de s’incliner ; son levier porte D2 dans la reconstruction. L’amortisseur muni de rotules relie D1 à D2 et travaille sur cette inclinaison. Aucun pivot G1 n’est ajouté à la fixation du bras. Le porte-pince descend jusqu'à une articulation basse portant une grande pince annulaire ou circumférentielle. Cette pince à deux demi-pinces se refermant angulairement comme un câlin doit entourer et retenir la zone large d’une bouée indépendante, approximativement au voisinage de la ligne d'eau. La bouée possède un col supérieur portant `BOX_2`. Après capture grossière de la bouée par la pince, le bras doit pouvoir amener `BOX_1` en position et orientation d'accouplement avec `BOX_2`. Les contacts `GRIPPER/BUOY` et `BOX_1/BOX_2` sont temporaires et désaccouplables. Ne pas transformer les superpositions 2D en pénétrations de matière, conserver la mobilité du support amorti, et ne pas inventer les degrés de liberté ou actionneurs non explicitement dessinés.
+Créer une plateforme rigide horizontale d'environ 5 m portant sous elle un grand longeron cylindrique/tubulaire vu en section et maintenu par des supports inclinés. Sur la plateforme est fixé un bras série à quatre pivots coplanaires `A1-A4`, terminé par une rotation axiale `A5` portant `BOX_1`. À droite et sous le longeron, un bras porte-pince est encastré directement dans le longeron. La rotule D1 est fixée au longeron. Le pivot inférieur G4 permet à la pince de s’incliner ; son levier porte D2 dans la reconstruction. L’amortisseur muni de rotules relie D1 à D2 et travaille sur cette inclinaison. Aucun pivot G1 n’est ajouté à la fixation du bras. Le porte-pince descend jusqu'à une articulation basse portant une grande pince annulaire ou circumférentielle. Un vérin à corps et tige distincts relie les deux bras par les rotules V1 et V2, sur des leviers solidaires des demi-pinces ; sa rétraction les referme. Ses attaches et sa course sont illustratives, et la fermeture symétrique reste prescrite. Cette pince à deux demi-pinces se refermant angulairement comme un câlin doit entourer et retenir la zone large d’une bouée indépendante, approximativement au voisinage de la ligne d'eau. La bouée possède un col supérieur portant `BOX_2`. Après capture grossière de la bouée par la pince, le bras doit pouvoir amener `BOX_1` en position et orientation d'accouplement avec `BOX_2`. Les contacts `GRIPPER/BUOY` et `BOX_1/BOX_2` sont temporaires et désaccouplables. Ne pas transformer les superpositions 2D en pénétrations de matière, conserver la mobilité du support amorti, et ne pas inventer les degrés de liberté ou actionneurs non explicitement dessinés.
