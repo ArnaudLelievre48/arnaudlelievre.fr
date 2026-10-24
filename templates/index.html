@@ -15,55 +15,23 @@
 	<body>
 		<div class="ambient-background" aria-hidden="true"></div>
 		<div class="page-wraper" data-section="home">
-			<div class="header">
-				<div class="tab-blob" data-position="left" aria-hidden="true">
-					<div class="blob-round blob-round-left">
-						<div class="blob-inner-round blob-inner-round-left"></div>
-					</div>
-					<div class="blob-round blob-round-right">
-						<div class="blob-inner-round blob-inner-round-right"></div>
-					</div>
+			<svg class="navigation-surface" aria-hidden="true" focusable="false">
+				<path class="navigation-shape"></path>
+				<path class="navigation-trace" pathLength="1000"></path>
+			</svg>
+			<nav class="header" aria-label="Main navigation">
+				<div class="header-button-wraper home active">
+					<button class="header-button home active" id="homeBtn" type="button" aria-pressed="true" aria-controls="home-content">Home</button>
 				</div>
-
-				<div class="left-header">
-
-					<div class="header-button-wraper home active">
-						<button class="header-button home active" id="homeBtn">Home</button>
-					</div>
-					<div class="round-right home active">
-						<div class="inner-round-right home active">
-						</div>
-					</div>
-
+				<div class="header-button-wraper projects">
+					<button class="header-button projects" id="projectsBtn" type="button" aria-pressed="false" aria-controls="projects-content">Projects</button>
 				</div>
-
-				<div class="right-header">
-
-					<div class="round-left projects ">
-						<div class="inner-round-left projects ">
-						</div>
-					</div>
-					<div class="header-button-wraper projects ">
-						<button class="header-button projects " id="projectsBtn">Projects</button>
-					</div>
-					<div class="round-right projects ">
-						<div class="inner-round-right projects ">
-						</div>
-					</div>
-
-					<div class="round-left resume">
-						<div class="inner-round-left resume">
-						</div>
-					</div>
-					<div class="header-button-wraper resume">
-						<button class="header-button resume" id="resumeBtn">Resume</button>
-					</div>
-
+				<div class="header-button-wraper resume">
+					<button class="header-button resume" id="resumeBtn" type="button" aria-pressed="false" aria-controls="resume-content">Resume</button>
 				</div>
+			</nav>
 
-			</div>
-
-			<div class="content home-content home active">
+			<div class="content home-content home active" id="home-content" aria-hidden="false">
 
 				<div class="left-hero">
 					<div class="left-top-hero">
@@ -115,7 +83,7 @@
 
 			</div>
 
-			<div class="content project-content projects">
+			<div class="content project-content projects" id="projects-content" aria-hidden="true" inert>
 				<div class="project-backdrop" data-effect="none" aria-hidden="true">
 					<div class="project-star-field">
 						<span class="project-meteor"></span>
@@ -138,7 +106,7 @@
 				</div>
 				<button class="project-nav project-nav-next" type="button" aria-label="Next project" title="Next project">&rarr;</button>
 			</div>
-			<div class="content resume-content resume">
+			<div class="content resume-content resume" id="resume-content" aria-hidden="true" inert>
 				<div class="resume-content-wrapper">
 					<div class="resume-heading">
 						<h1 class="arnaudlelievre">Resume</h1>
@@ -208,7 +176,6 @@
 				</div>
 			</div>
 
-			<div class="panel-outline" aria-hidden="true"></div>
 		</div>
 
 

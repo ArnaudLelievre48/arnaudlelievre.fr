@@ -1,148 +1,130 @@
-const blob = document.querySelector(".tab-blob");
 const header = document.querySelector(".header");
 const pageWrapper = document.querySelector(".page-wraper");
-const panelOutline = document.querySelector(".panel-outline");
-let blobMovement = 0;
-const contentCornerProperties = [
-    "borderTopLeftRadius",
-    "borderTopRightRadius",
-    "borderBottomRightRadius",
-    "borderBottomLeftRadius"
-];
+const navigationSurface = document.querySelector(".navigation-surface");
+const navigationShape = document.querySelector(".navigation-shape");
+const navigationTrace = document.querySelector(".navigation-trace");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const sectionNames = ["home", "projects", "resume"];
+let navigationPosition = null;
+let navigationMetrics = null;
+let navigationFrame = null;
 
-function moveBlob(section, animate = true) {
-    const wrapper = document.querySelector(
-        ".header-button-wraper." + section
+function drawNavigation(position) {
+    const { width, height, panelTop, radius, tabRadius, jointRadius } = navigationMetrics;
+    const left = Math.max(0, Math.min(position.left, width - position.width));
+    const right = left + position.width;
+
+    // At either outer edge, shrink both adjoining curves together so they never overlap.
+    const leftScale = Math.max(0, Math.min(1, left / (radius + jointRadius)));
+    const rightScale = Math.max(0, Math.min(1, (width - right) / (radius + jointRadius)));
+    const leftCorner = radius * leftScale;
+    const rightCorner = radius * rightScale;
+    const leftJoint = jointRadius * leftScale;
+    const rightJoint = jointRadius * rightScale;
+    const tabCorner = Math.min(tabRadius, position.width / 2, panelTop - Math.max(leftJoint, rightJoint));
+    const arc = (r, sweep, x, y) => r > 0.001
+        ? `A ${r} ${r} 0 0 ${sweep} ${x} ${y}`
+        : `L ${x} ${y}`;
+    const path = [
+        `M ${radius} ${height}`,
+        arc(radius, 1, 0, height - radius),
+        `L 0 ${panelTop + leftCorner}`,
+        arc(leftCorner, 1, leftCorner, panelTop),
+        `L ${left - leftJoint} ${panelTop}`,
+        arc(leftJoint, 0, left, panelTop - leftJoint),
+        `L ${left} ${tabCorner}`,
+        arc(tabCorner, 1, left + tabCorner, 0),
+        `L ${right - tabCorner} 0`,
+        arc(tabCorner, 1, right, tabCorner),
+        `L ${right} ${panelTop - rightJoint}`,
+        arc(rightJoint, 0, right + rightJoint, panelTop),
+        `L ${width - rightCorner} ${panelTop}`,
+        arc(rightCorner, 1, width, panelTop + rightCorner),
+        `L ${width} ${height - radius}`,
+        arc(radius, 1, width - radius, height),
+        "Z"
+    ].join(" ");
+
+    navigationShape.setAttribute("d", path);
+    navigationTrace.setAttribute("d", path);
+    const content = document.querySelector(".content.active");
+    content.style.borderTopLeftRadius = `${leftCorner}px`;
+    content.style.borderTopRightRadius = `${rightCorner}px`;
+    navigationPosition = { left, width: position.width };
+}
+
+function layoutNavigation(animate = false) {
+    cancelAnimationFrame(navigationFrame);
+    navigationFrame = null;
+
+    const content = document.querySelector(".content.active");
+    const button = document.querySelector(".header-button-wraper.active");
+    const bounds = pageWrapper.getBoundingClientRect();
+    const panelBounds = content.getBoundingClientRect();
+    const tabBounds = button.getBoundingClientRect();
+    const panelTop = panelBounds.top - bounds.top;
+    const radius = Math.min(
+        parseFloat(getComputedStyle(content).borderBottomLeftRadius),
+        bounds.width / 2,
+        (bounds.height - panelTop) / 2
     );
+    navigationMetrics = {
+        width: bounds.width, height: bounds.height, panelTop, radius,
+        tabRadius: parseFloat(getComputedStyle(button).borderTopLeftRadius),
+        jointRadius: Math.min(window.innerWidth, window.innerHeight) * 0.02
+    };
+    navigationSurface.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+    const target = { left: tabBounds.left - bounds.left, width: tabBounds.width };
 
-    if (!wrapper) return;
-
-    const headerRect = header.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const targetPosition = {
-        home: "left",
-        projects: "middle",
-        resume: "right"
-    }[section];
-    const shouldAnimate = animate && !window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
-    const movement = ++blobMovement;
-
-    if (shouldAnimate) {
-        blob.classList.add("is-ready", "moving");
-    } else {
-        blob.classList.remove("is-ready", "moving");
+    if (!animate || reducedMotion.matches || !navigationPosition) {
+        drawNavigation(target);
+        return;
     }
 
-    // Start the edge morph at the same time as the blob movement.
-    blob.dataset.position = targetPosition;
-
-    blob.style.setProperty(
-        "--blob-x",
-        `${wrapperRect.left - headerRect.left}px`
-    );
-    blob.style.width = `${wrapperRect.width}px`;
-
-    if (shouldAnimate) {
-        const finishMovement = event => {
-            // Ignore the shorter transform transitions bubbling from the edges.
-            if (event.target !== blob || event.propertyName !== "transform") return;
-            blob.removeEventListener("transitionend", finishMovement);
-
-            if (movement === blobMovement) {
-                blob.classList.remove("moving");
-            }
-        };
-
-        blob.addEventListener("transitionend", finishMovement);
-    } else {
-        blob.getBoundingClientRect();
-        requestAnimationFrame(() => {
-            if (movement === blobMovement) {
-                blob.classList.add("is-ready");
-            }
+    // A new click starts from the displayed shape, including when the previous move is unfinished.
+    const start = { ...navigationPosition };
+    const startedAt = performance.now();
+    drawNavigation(start);
+    function advance(now) {
+        const progress = Math.min(1, (now - startedAt) / 1000);
+        const eased = 1 - Math.pow(1 - progress, 4);
+        drawNavigation({
+            left: start.left + (target.left - start.left) * eased,
+            width: start.width + (target.width - start.width) * eased
         });
+        navigationFrame = progress < 1 ? requestAnimationFrame(advance) : null;
     }
+    navigationFrame = requestAnimationFrame(advance);
 }
 
 function setActive(section) {
-    const activeButton = document.querySelector(".header-button.active");
-    if (activeButton?.classList.contains(section)) return;
+    if (!sectionNames.includes(section) || pageWrapper.dataset.section === section) return;
     pageWrapper.dataset.section = section;
-
-    const currentContent = document.querySelector(".content.active");
-    const nextContent = document.querySelector(`.content.${section}`);
-
-    if (currentContent && nextContent) {
-        const currentStyle = getComputedStyle(currentContent);
-
-        contentCornerProperties.forEach(property => {
-            nextContent.style[property] = currentStyle[property];
-        });
-    }
-
-    // remove active everywhere
-    document.querySelectorAll(".active").forEach(el => {
-        el.classList.remove("active");
+    sectionNames.forEach(name => {
+        const active = name === section;
+        const button = document.getElementById(`${name}Btn`);
+        const content = document.getElementById(button.getAttribute("aria-controls"));
+        button.classList.toggle("active", active);
+        button.parentElement.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+        content.classList.toggle("active", active);
+        content.setAttribute("aria-hidden", String(!active));
+        content.inert = !active;
     });
-
-    // activate the selected section
-    document.querySelectorAll("." + section).forEach(el => {
-        el.classList.add("active");
-    });
-
-    if (nextContent) {
-        nextContent.getBoundingClientRect();
-        requestAnimationFrame(() => {
-            contentCornerProperties.forEach(property => {
-                nextContent.style[property] = "";
-            });
-        });
-    }
-
-    moveBlob(section);
-    syncProjectBlobTheme();
+    syncNavigationTheme();
     syncProjectMedia();
-    refreshPanelOutline();
+    layoutNavigation(true);
 }
 
-document.getElementById("homeBtn").onclick = () => setActive("home");
-document.getElementById("projectsBtn").onclick = () => setActive("projects");
-document.getElementById("resumeBtn").onclick = () => setActive("resume");
-
-function refreshBlob() {
-    const active = document.querySelector(".header-button.active");
-
-    if (active) {
-        const section = [...active.classList].find(c =>
-            ["home","projects","resume"].includes(c)
-        );
-
-        if (section) moveBlob(section, false);
-    }
-}
-
-refreshBlob();
-new ResizeObserver(refreshBlob).observe(header);
-
-function refreshPanelOutline() {
-    const content = document.querySelector(".content.active");
-    if (!content) return;
-
-    const bounds = content.getBoundingClientRect();
-    const wrapperBounds = pageWrapper.getBoundingClientRect();
-    Object.assign(panelOutline.style, {
-        left: `${bounds.left - wrapperBounds.left}px`,
-        top: `${bounds.top - wrapperBounds.top}px`,
-        width: `${bounds.width}px`,
-        height: `${bounds.height}px`
-    });
-}
-
-const panelResizeObserver = new ResizeObserver(refreshPanelOutline);
-panelResizeObserver.observe(pageWrapper);
-document.querySelectorAll(".content").forEach(content => panelResizeObserver.observe(content));
+sectionNames.forEach(section => {
+    document.getElementById(`${section}Btn`).addEventListener("click", () => setActive(section));
+});
+const navigationResizeObserver = new ResizeObserver(() => layoutNavigation());
+navigationResizeObserver.observe(pageWrapper);
+navigationResizeObserver.observe(header);
+document.querySelectorAll(".header-button-wraper").forEach(button => navigationResizeObserver.observe(button));
+reducedMotion.addEventListener("change", () => layoutNavigation());
+document.fonts.ready.then(() => layoutNavigation());
 
 const projectPages = [...document.querySelectorAll(".project-page")];
 const previousProjectButton = document.querySelector(".project-nav-previous");
@@ -165,18 +147,18 @@ const projectThemeProperties = {
     themeStar: "--project-star"
 };
 
-function syncProjectBlobTheme() {
+function syncNavigationTheme() {
     const projectIsActive = projectContent.classList.contains("active");
 
     if (projectIsActive && currentProjectBackground) {
-        blob.style.setProperty("--blob-bg", currentProjectBackground);
-        panelOutline.style.setProperty(
+        pageWrapper.style.setProperty("--panel-color", currentProjectBackground);
+        pageWrapper.style.setProperty(
             "--outline-color",
             getComputedStyle(projectContent).getPropertyValue("--project-glow")
         );
     } else {
-        blob.style.removeProperty("--blob-bg");
-        panelOutline.style.removeProperty("--outline-color");
+        pageWrapper.style.removeProperty("--panel-color");
+        pageWrapper.style.removeProperty("--outline-color");
     }
 }
 
@@ -195,7 +177,7 @@ function applyProjectTheme(page) {
 
     currentProjectBackground = theme.themeBackground ?? "";
     projectBackdrop.dataset.effect = theme.themeEffect ?? "none";
-    syncProjectBlobTheme();
+    syncNavigationTheme();
 }
 
 function syncProjectMedia() {
@@ -341,4 +323,4 @@ function createProjectAtoms() {
 createProjectStars();
 createProjectAtoms();
 showProject(0, false);
-refreshPanelOutline();
+layoutNavigation();
