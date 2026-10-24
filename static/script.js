@@ -1,5 +1,7 @@
 const blob = document.querySelector(".tab-blob");
 const header = document.querySelector(".header");
+const pageWrapper = document.querySelector(".page-wraper");
+const panelOutline = document.querySelector(".panel-outline");
 let blobMovement = 0;
 const contentCornerProperties = [
     "borderTopLeftRadius",
@@ -67,6 +69,7 @@ function moveBlob(section, animate = true) {
 function setActive(section) {
     const activeButton = document.querySelector(".header-button.active");
     if (activeButton?.classList.contains(section)) return;
+    pageWrapper.dataset.section = section;
 
     const currentContent = document.querySelector(".content.active");
     const nextContent = document.querySelector(`.content.${section}`);
@@ -101,6 +104,7 @@ function setActive(section) {
     moveBlob(section);
     syncProjectBlobTheme();
     syncProjectMedia();
+    refreshPanelOutline();
 }
 
 document.getElementById("homeBtn").onclick = () => setActive("home");
@@ -121,6 +125,24 @@ function refreshBlob() {
 
 refreshBlob();
 new ResizeObserver(refreshBlob).observe(header);
+
+function refreshPanelOutline() {
+    const content = document.querySelector(".content.active");
+    if (!content) return;
+
+    const bounds = content.getBoundingClientRect();
+    const wrapperBounds = pageWrapper.getBoundingClientRect();
+    Object.assign(panelOutline.style, {
+        left: `${bounds.left - wrapperBounds.left}px`,
+        top: `${bounds.top - wrapperBounds.top}px`,
+        width: `${bounds.width}px`,
+        height: `${bounds.height}px`
+    });
+}
+
+const panelResizeObserver = new ResizeObserver(refreshPanelOutline);
+panelResizeObserver.observe(pageWrapper);
+document.querySelectorAll(".content").forEach(content => panelResizeObserver.observe(content));
 
 const projectPages = [...document.querySelectorAll(".project-page")];
 const previousProjectButton = document.querySelector(".project-nav-previous");
@@ -148,8 +170,13 @@ function syncProjectBlobTheme() {
 
     if (projectIsActive && currentProjectBackground) {
         blob.style.setProperty("--blob-bg", currentProjectBackground);
+        panelOutline.style.setProperty(
+            "--outline-color",
+            getComputedStyle(projectContent).getPropertyValue("--project-glow")
+        );
     } else {
         blob.style.removeProperty("--blob-bg");
+        panelOutline.style.removeProperty("--outline-color");
     }
 }
 
@@ -253,12 +280,65 @@ function createProjectStars() {
         star.style.setProperty("--star-opacity", opacity);
         star.style.setProperty("--star-low-opacity", opacity * 0.6);
         star.style.setProperty("--star-delay", `${random() * -5}s`);
-        star.style.setProperty("--star-duration", `${1 + random() * 2}s`);
+        star.style.setProperty("--star-duration", `${4 + random() * 4}s`);
         stars.appendChild(star);
     }
 
     starField.appendChild(stars);
 }
 
+function createProjectAtoms() {
+    const atomField = document.querySelector(".project-atom-field");
+    const atoms = document.createDocumentFragment();
+    let seed = 2718;
+
+    function random() {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+    }
+
+    for (let index = 0; index < 20; index++) {
+        const atom = document.createElement("span");
+        atom.className = "project-atom";
+        atom.style.setProperty("--atom-x", `${7 + (index % 5) * 20 + (random() - 0.5) * 8}%`);
+        atom.style.setProperty("--atom-y", `${10 + Math.floor(index / 5) * 24 + (random() - 0.5) * 10}%`);
+        atom.style.setProperty("--atom-size", `${28 + random() * 28}px`);
+        atom.style.setProperty("--atom-opacity", 0.18 + random() * 0.16);
+        atom.style.setProperty("--atom-drift-x", `${(random() - 0.5) * 90}px`);
+        atom.style.setProperty("--atom-drift-y", `${(random() - 0.5) * 70}px`);
+        atom.style.setProperty("--atom-drift-duration", `${24 + random() * 20}s`);
+        atom.style.setProperty("--atom-spin-duration", `${60 + random() * 60}s`);
+        atom.style.setProperty("--atom-delay", `${random() * -100}s`);
+
+        const symbol = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        symbol.setAttribute("class", "project-atom-symbol");
+        symbol.setAttribute("viewBox", "0 0 64 64");
+        symbol.setAttribute("fill", "none");
+        symbol.setAttribute("stroke", "currentColor");
+        symbol.setAttribute("stroke-width", "1.8");
+        symbol.innerHTML = `
+            <ellipse cx="32" cy="32" rx="27" ry="10" />
+            <ellipse cx="32" cy="32" rx="27" ry="10" transform="rotate(60 32 32)" />
+            <ellipse cx="32" cy="32" rx="27" ry="10" transform="rotate(120 32 32)" />
+            <circle cx="32" cy="32" r="3" fill="currentColor" stroke="none" />
+        `;
+        if (index % 3 === 0) {
+            const electron = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+            Object.entries({
+                class: "project-electron",
+                cx: "32", cy: "32", rx: "27", ry: "10",
+                pathLength: "100", "stroke-width": "2.7"
+            }).forEach(([name, value]) => electron.setAttribute(name, value));
+            symbol.appendChild(electron);
+        }
+        atom.appendChild(symbol);
+        atoms.appendChild(atom);
+    }
+
+    atomField.appendChild(atoms);
+}
+
 createProjectStars();
+createProjectAtoms();
 showProject(0, false);
+refreshPanelOutline();

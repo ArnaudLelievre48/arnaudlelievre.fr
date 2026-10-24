@@ -2,10 +2,14 @@ const canvas = document.getElementById("fluidCanvas");
 const ctx = canvas.getContext("2d");
 
 function resizeCanvas(){
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
+  const width = canvas.offsetWidth;
+  const height = canvas.offsetHeight;
+  if (!width || !height) return;
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
 }
 window.addEventListener("resize", resizeCanvas);
+new ResizeObserver(resizeCanvas).observe(canvas);
 resizeCanvas();
 
 

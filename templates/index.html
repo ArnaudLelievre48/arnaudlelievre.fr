@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<title>arnaudlelievre.fr</title>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 		<link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
 
@@ -12,7 +13,8 @@
 	</head>
 
 	<body>
-		<div class="page-wraper">
+		<div class="ambient-background" aria-hidden="true"></div>
+		<div class="page-wraper" data-section="home">
 			<div class="header">
 				<div class="tab-blob" data-position="left" aria-hidden="true">
 					<div class="blob-round blob-round-left">
@@ -73,28 +75,28 @@
 					<div class="left-bottom-hero">
 						<div class="link-tab">
 							<div class="link-tab-top">
-								<div class="link-item link-item-left link-github" onclick="window.open('https://github.com/ArnaudLelievre48', '_blank')">
+								<a class="link-item link-item-left link-github" href="https://github.com/ArnaudLelievre48" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
 									<div class="img-wrapper">
-										<img class="link-logo" src="{{ url_for('static', filename='github.svg') }}"></img>
+										<img class="link-logo" src="{{ url_for('static', filename='github.svg') }}" alt="">
 									</div>
-								</div>
-								<div class="link-item link-item-right link-youtube" onclick="window.open('https://www.youtube.com/@arnaudlelievre48/featured', '_blank')">
+								</a>
+								<a class="link-item link-item-right link-youtube" href="https://www.youtube.com/@arnaudlelievre48/featured" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
 									<div class="img-wrapper">
-										<img class="link-logo" src="{{ url_for('static', filename='youtube.svg') }}"></img>
+										<img class="link-logo" src="{{ url_for('static', filename='youtube.svg') }}" alt="">
 									</div>
-								</div>
+								</a>
 							</div>
 							<div class="link-tab-bottom">
-								<div class="link-item link-item-left link-linkedin" onclick="window.open('https://www.linkedin.com/in/arnaud-lelievre-160359289/', '_blank')">
+								<a class="link-item link-item-left link-linkedin" href="https://www.linkedin.com/in/arnaud-lelievre-160359289/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
 									<div class="img-wrapper">
-										<img class="link-logo" src="{{ url_for('static', filename='linkedin.svg') }}"></img>
+										<img class="link-logo" src="{{ url_for('static', filename='linkedin.svg') }}" alt="">
 									</div>
-								</div>
-								<div class="link-item link-item-right link-email" onclick="window.location.href='mailto:arnaudlelievre.fr@gmail.com'">
+								</a>
+								<a class="link-item link-item-right link-email" href="mailto:arnaudlelievre.fr@gmail.com" aria-label="Email">
 									<div class="img-wrapper">
-										<img class="link-logo" src="{{ url_for('static', filename='email.svg') }}"></img>
+										<img class="link-logo" src="{{ url_for('static', filename='email.svg') }}" alt="">
 									</div>
-								</div>
+								</a>
 							</div>
 						</div>
 					</div>
@@ -104,12 +106,10 @@
 					</canvas>
 					<div class="right-hero-content">
 						<p class="right-hero-text-title">Hi !</p>
-						<p class="right-hero-text">My name is Arnaud Lelievre, and this is my website</p>
-						<p class="right-hero-text">I am hosting it myself !</p>
+						<p class="right-hero-text">My name is Arnaud Lelièvre, and this is my website, I am hosting it myself on a raspberry-pi !</p>
 						<span class="vspan"></span>
-						<p class="right-hero-text">I am a 21 yo engineering student at ENSTA, Brest.</p>
-						<p class="right-hero-text">My interests are fluid mechanics, programming, Linux, basketball, running,</p>
-						<p class="right-hero-text">lifting and cooking</p>
+						<p class="right-hero-text">I am a 22 yo engineering student at ENSTA, on Brest's campus.</p>
+						<p class="right-hero-text">My interests are Fluid Mechanics, General Relativity, Programming, Linux, Basketball, Lifting, Running, Reading Comics-Books and Cooking</p>
 					</div>
 				</div>
 
@@ -117,7 +117,10 @@
 
 			<div class="content project-content projects">
 				<div class="project-backdrop" data-effect="none" aria-hidden="true">
-					<div class="project-star-field"></div>
+					<div class="project-star-field">
+						<span class="project-meteor"></span>
+					</div>
+					<div class="project-atom-field"></div>
 				</div>
 				<div class="project-pages">
 					{% for project_template in project_templates %}
@@ -137,26 +140,75 @@
 			</div>
 			<div class="content resume-content resume">
 				<div class="resume-content-wrapper">
-					<p class="resume-item-title"></p>
-					<p class="arnaudlelievre">Resume</p>
-					<p class="resume-item-title"></p>
+					<div class="resume-heading">
+						<h1 class="arnaudlelievre">Resume</h1>
+						<a class="resume-download" href="{{ url_for('static', filename='main.pdf') }}" download>Download CV (PDF)</a>
+					</div>
 					<div class="resume-content-wrapper-double-column">
 						<div class="resume-left">
-							<p class="resume-title">Education</p>
-							<p class="resume-item-title">⚛ ENSTA | 2025 - present</p>
-							<p class="resume-item">- ENSTA is a Graduate french engineering school and research facility, part of <b>Institut Polytechnique de Paris</b></p>
-							<p class="resume-item">- I am currently studying on Brest's Campus in Britanny</p>
-							<p class="resume-item-title">⚛ CPGE | 2021 - 2024</p>
-							<p class="resume-item">- CPGE is a particularity of the french schooling system that consists of 2 to 3 years after high-school graduation of intensive preparatory classes for competitive exam in order to get into France's most prestigious graduating schools (Grandes Ecoles) such as ENSTA</p>
-							<p class="resume-item">- I did my first and second year of Maths-Physics classes at <b>Lycée Louis-Pasteur, Neuilly</b> and my third year at <b>Lycée Janson-de-Sailly, Paris</b></p></p>
+							<section class="resume-section" aria-labelledby="resume-education">
+								<h2 class="resume-title" id="resume-education">Education</h2>
+								<h3 class="resume-item-title">ENSTA · Engineering degree</h3>
+								<p class="resume-meta">2025 – present · Class of 2028</p>
+								<p class="resume-item">Engineering student on the Brest campus, part of Institut Polytechnique de Paris.</p>
+								<h3 class="resume-item-title">Preparatory classes · MPSI / MP</h3>
+								<p class="resume-meta">2022 – 2025 · Mathematics and physics</p>
+								<p class="resume-item">Intensive preparation for competitive entrance exams to French engineering schools.</p>
+								<ul class="resume-list">
+									<li>Lycée Janson-de-Sailly, Paris · 2024 – 2025</li>
+									<li>Lycée Louis Pasteur, Neuilly · 2022 – 2024</li>
+								</ul>
+							</section>
+							<section class="resume-section" aria-labelledby="resume-experience">
+								<h2 class="resume-title" id="resume-experience">Work experience</h2>
+								<h3 class="resume-item-title">FPBois · Operator internship</h3>
+								<p class="resume-meta">January 2026 · 1 month · Mimizan, France</p>
+								<p class="resume-item">Operated a lumber-stacking machine and proposed adding spikes at specific locations to improve its operation.</p>
+							</section>
+							<section class="resume-section" aria-labelledby="resume-leadership">
+								<h2 class="resume-title" id="resume-leadership">Leadership</h2>
+								<h3 class="resume-item-title">ENST’EIN · Club president</h3>
+								<p class="resume-meta">2026 – present · ENSTA Brest</p>
+								<p class="resume-item">President of a student club where students share subjects they are passionate about, often scientific, through talks and workshops.</p>
+								<a class="resume-link" href="https://club-enstein.arnaudlelievre.fr/" target="_blank" rel="noopener noreferrer">Visit the club’s website ↗</a>
+							</section>
+							<section class="resume-section" aria-labelledby="resume-languages">
+								<h2 class="resume-title" id="resume-languages">Languages</h2>
+								<dl class="resume-facts">
+									<div><dt>English</dt><dd>Fluent · TOEIC 940/990</dd></div>
+									<div><dt>French</dt><dd>Native</dd></div>
+									<div><dt>Spanish</dt><dd>Intermediate</dd></div>
+									<div><dt>Chinese</dt><dd>Beginner</dd></div>
+								</dl>
+							</section>
 						</div>
 						<div class="resume-right">
-							<p class="resume-title">Skills</p>
+							<section class="resume-section" aria-labelledby="resume-skills">
+								<h2 class="resume-title" id="resume-skills">Skills</h2>
+								<dl class="resume-facts">
+									<div><dt>Programming</dt><dd>Python, Rust, C++, JavaScript, OCaml, Bash</dd></div>
+									<div><dt>Web &amp; documents</dt><dd>Flask, HTML, CSS, LaTeX</dd></div>
+									<div><dt>Scientific computing &amp; data</dt><dd>CuPy, scientific Python libraries, SQLite</dd></div>
+									<div><dt>Tools</dt><dd>Linux, Git, Hermes, Ollama, Vim</dd></div>
+								</dl>
+							</section>
+							<section class="resume-section" aria-labelledby="resume-projects">
+								<h2 class="resume-title" id="resume-projects">Projects</h2>
+								<h3 class="resume-item-title">Schwarzschild black hole simulation</h3>
+								<p class="resume-item">Developed a real-time ray-tracing simulation using Python, CuPy and Rust. Independently studied general relativity using textbooks by Bernard F. Schutz and Sean M. Carroll.</p>
+								<a class="resume-link" href="https://github.com/ArnaudLelievre48/ray-traced-black-hole" target="_blank" rel="noopener noreferrer">View the code on GitHub ↗</a>
+								<h3 class="resume-item-title">Pollutant diffusion in rivers · TIPE</h3>
+								<p class="resume-item">Studied pollutant transport in river flows by implementing Langevin’s equation in a fluid simulation using the Lattice Boltzmann method.</p>
+								<h3 class="resume-item-title">ImGoaTeX · Presentation language</h3>
+								<p class="resume-item">Built a Python alternative to LaTeX’s Beamer package that compiles presentations into a single portable HTML file, with videos, GIFs and slide animations. Developed and self-hosted a web editor for writing and compiling presentations in the browser.</p>
+								<a class="resume-link" href="https://imgoatex.arnaudlelievre.fr/" target="_blank" rel="noopener noreferrer">Try the online editor ↗</a>
+							</section>
 						</div>
 					</div>
 				</div>
 			</div>
 
+			<div class="panel-outline" aria-hidden="true"></div>
 		</div>
 
 

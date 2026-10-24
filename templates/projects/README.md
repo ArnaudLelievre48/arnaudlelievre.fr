@@ -6,4 +6,4 @@
 
 Les fichiers `.html` sont charges automatiquement dans l'ordre alphabetique. Aucun changement dans `backend.py`, `index.html` ou `script.js` n'est necessaire.
 
-Le bloc `.project-theme` en haut de chaque fichier definit les couleurs et l'effet de fond de la page. Les effets disponibles sont `grid`, `stars` et `none`.
+Le bloc `.project-theme` en haut de chaque fichier definit les couleurs et l'effet de fond de la page. Les effets disponibles sont `grid`, `stars`, `atoms` (petits atomes en mouvement et en rotation) et `none`.
