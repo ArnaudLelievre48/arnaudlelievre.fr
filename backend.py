@@ -65,4 +65,4 @@ def redirect_to_imgoatex(path):
     return redirect(f"https://imgoatex.arnaudlelievre.fr/{path}", code=302)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")

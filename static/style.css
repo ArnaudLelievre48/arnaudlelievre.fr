@@ -160,6 +160,7 @@ body {
 }
 .content.home-content {
   border-top-left-radius: 0;
+  overflow: hidden;
 }
 .left-hero {
   width: 40%;
@@ -1062,11 +1063,16 @@ body {
     overscroll-behavior-y: contain;
   }
   .content.home-content {
-    padding: 24px 20px;
-    overflow-y: auto;
-    justify-content: flex-start;
+    padding: 20px;
+    container-type: size;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    gap: 20px;
+  }
+  .content.home-content.active {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
     align-items: center;
-    gap: 28px;
   }
   .home-content .left-hero,
   .home-content .right-hero {
@@ -1076,15 +1082,17 @@ body {
     margin: 0;
   }
   .home-content .left-hero {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 20px;
+    align-items: center;
   }
   .home-content .left-top-hero {
-    width: 55%;
+    width: 100%;
     height: auto;
   }
   .home-content .left-bottom-hero {
-    width: 45%;
+    width: 100%;
     height: auto;
   }
   .home-content .arnaudlelievre {
@@ -1096,10 +1104,12 @@ body {
     font-size: 0.8125rem;
     line-height: 1.5;
     text-align: center;
+    color: var(--ac);
+    font-weight: 600;
   }
   .home-content .right-hero {
-    flex: 1 0 auto;
-    min-height: 300px;
+    min-height: 0;
+    height: 100%;
   }
   .home-content .separator-top-bottom {
     display: none;
@@ -1149,14 +1159,16 @@ body {
     filter: none;
   }
   .home-content .right-hero-text-title {
-    margin: 0 0 20px;
-    font-size: 1.875rem;
+    margin: 0 0 12px;
+    font-size: 1.75rem;
+    line-height: 1.2;
     filter: drop-shadow(0 0 10px var(--ac));
   }
   .home-content .right-hero-text {
-    margin: 0 0 14px;
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
     text-align: center;
   }
   .home-content .right-hero-text:last-child {
@@ -1302,6 +1314,30 @@ body {
   .resume-link {
     font-size: 1rem;
   }
+}
+
+/* Use the space left by the browser bars and navigation, rather than the physical screen size. */
+@container (max-height: 500px) {
+  .home-content .left-hero { gap: 16px; }
+  .home-content .arnaudlelievre { font-size: 1.625rem; }
+  .home-content .link-tab { gap: 8px; }
+  .home-content .link-item { height: 44px; }
+  .home-content .right-hero-text-title { font-size: 1.5rem; margin-bottom: 8px; }
+  .home-content .right-hero-text { font-size: 0.9375rem; line-height: 1.45; margin-bottom: 10px; }
+}
+@container (max-height: 420px) {
+  .home-content .right-hero-text { font-size: 0.875rem; line-height: 1.4; margin-bottom: 8px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+  .content.home-content { padding: 12px 20px; gap: 24px; }
+  .content.home-content.active {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .home-content .left-hero { display: flex; flex-direction: column; gap: 12px; }
+  .home-content .arnaudlelievre { font-size: 1.5rem; }
+  .home-content .left-bottom-hero { width: min(100%, 176px); }
 }
 
 @media (hover: none) {
